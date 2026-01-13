@@ -81,12 +81,7 @@ const state = {
   events: [],
   activeTicketId: null,
   searchTerm: "",
-  settings: {
-    theme: {
-      presetId: DEFAULT_THEME_ID,
-      customColors: { ...DEFAULT_THEME_COLORS }
-    }
-  }
+  statusFilters: ["open", "in-progress"]
 };
 
 const elements = {
@@ -96,6 +91,7 @@ const elements = {
   ticketList: $("ticketList"),
   ticketsCount: $("ticketsCount"),
   ticketSearchInput: $("ticketSearchInput"),
+  statusFilterInputs: document.querySelectorAll('input[name="ticketStatusFilter"]'),
   exportBtn: $("exportBtn"),
   prevBtn: $("prevBtn"),
   nextBtn: $("nextBtn"),
@@ -323,6 +319,16 @@ function normalizeEventRecord(record) {
   };
 }
 
+function normalizeTicketRecord(record) {
+  if (!record) return null;
+  return {
+    id: record.id || safeUUID(),
+    key: record.key || "",
+    title: record.title || "",
+    status: record.status || "open"
+  };
+}
+
 function syncStorage() {
   saveTickets(state.tickets);
   saveEvents(state.events);
@@ -335,6 +341,7 @@ function updateTicketList() {
     listEl: elements.ticketList,
     countEl: elements.ticketsCount,
     searchTerm: state.searchTerm,
+    statusFilters: state.statusFilters,
     activeTicketId: state.activeTicketId,
     onSelect: (id) => {
       state.activeTicketId = id;
@@ -353,7 +360,8 @@ function addTicket() {
   const ticket = {
     id: safeUUID(),
     key,
-    title
+    title,
+    status: "open"
   };
 
   state.tickets = [ticket, ...state.tickets];
@@ -500,6 +508,16 @@ function wireInputs() {
     }, 150)
   );
 
+  elements.statusFilterInputs.forEach((input) => {
+    input.checked = state.statusFilters.includes(input.value);
+    input.addEventListener("change", () => {
+      state.statusFilters = Array.from(elements.statusFilterInputs)
+        .filter((item) => item.checked)
+        .map((item) => item.value);
+      updateTicketList();
+    });
+  });
+
   elements.exportBtn.addEventListener("click", () => {
     const csv = buildCsv(state.tickets, state.events);
     downloadText("ticket-time-logs.csv", csv);
@@ -533,13 +551,21 @@ async function init() {
     throw new Error("FullCalendar failed to load.");
   }
 
-  await loadThemePresets();
-  const [tickets, events, settings] = await Promise.all([
-    loadTickets(),
-    loadEvents(),
-    loadSettings()
-  ]);
-  state.tickets = tickets;
+  const [tickets, events] = await Promise.all([loadTickets(), loadEvents()]);
+  let didNormalizeTickets = false;
+  state.tickets = tickets
+    .map((ticket) => {
+      const normalized = normalizeTicketRecord(ticket);
+      if (!normalized) return null;
+      if (!ticket || ticket.status !== normalized.status || ticket.id !== normalized.id) {
+        didNormalizeTickets = true;
+      }
+      return normalized;
+    })
+    .filter(Boolean);
+  if (didNormalizeTickets) {
+    saveTickets(state.tickets);
+  }
   state.events = events.map(normalizeEventRecord).filter(Boolean);
   state.activeTicketId = state.tickets[0]?.id || null;
   state.settings = getThemeSettings(settings);

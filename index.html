@@ -67,6 +67,22 @@
             <button class="btn" id="exportBtn" title="Export time logs to CSV">Export CSV</button>
           </div>
 
+          <div class="fieldRow" id="statusFilters" style="gap:12px; flex-wrap:wrap;">
+            <span class="smallMuted">Status:</span>
+            <label class="smallMuted">
+              <input type="checkbox" name="ticketStatusFilter" value="open" checked />
+              Open
+            </label>
+            <label class="smallMuted">
+              <input type="checkbox" name="ticketStatusFilter" value="in-progress" checked />
+              In-Progress
+            </label>
+            <label class="smallMuted">
+              <input type="checkbox" name="ticketStatusFilter" value="closed" />
+              Closed
+            </label>
+          </div>
+
           <div class="fieldRow" style="margin-bottom:0;">
             <input class="input" id="ticketSearchInput" placeholder="Search tickets..." />
           </div>
