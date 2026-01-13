@@ -61,6 +61,9 @@
           <div class="fieldRow">
             <input class="input" id="ticketTitleInput" placeholder="Title" />
           </div>
+          <div class="fieldRow">
+            <input class="input" id="ticketClientInput" placeholder="Client" />
+          </div>
 
           <div class="fieldRow">
             <button class="btn primary" id="addTicketBtn">+ Add ticket</button>
@@ -83,6 +86,11 @@
               <input type="checkbox" name="ticketStatusFilter" value="closed" />
               Closed
             </label>
+          </div>
+
+          <div class="fieldRow" id="clientFilters" style="gap:12px; flex-wrap:wrap;">
+            <span class="smallMuted">Client:</span>
+            <select class="input" id="clientFilterSelect" aria-label="Filter by client"></select>
           </div>
 
           <div class="fieldRow" style="margin-bottom:0;">

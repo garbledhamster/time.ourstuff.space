@@ -81,17 +81,20 @@ const state = {
   events: [],
   activeTicketId: null,
   searchTerm: "",
-  statusFilters: ["open", "in-progress"]
+  statusFilters: ["open", "in-progress"],
+  clientFilter: ""
 };
 
 const elements = {
   ticketKeyInput: $("ticketKeyInput"),
   ticketTitleInput: $("ticketTitleInput"),
+  ticketClientInput: $("ticketClientInput"),
   addTicketBtn: $("addTicketBtn"),
   ticketList: $("ticketList"),
   ticketsCount: $("ticketsCount"),
   ticketSearchInput: $("ticketSearchInput"),
   statusFilterInputs: document.querySelectorAll('input[name="ticketStatusFilter"]'),
+  clientFilterSelect: $("clientFilterSelect"),
   exportBtn: $("exportBtn"),
   importBtn: $("importBtn"),
   importInput: $("importInput"),
@@ -327,7 +330,8 @@ function normalizeTicketRecord(record) {
     id: record.id || safeUUID(),
     key: record.key || "",
     title: record.title || "",
-    status: record.status || "open"
+    status: record.status || "open",
+    client: record.client || ""
   };
 }
 
@@ -336,7 +340,38 @@ function syncStorage() {
   saveEvents(state.events);
 }
 
+function updateClientFilterOptions() {
+  if (!elements.clientFilterSelect) return;
+  const clientSet = new Set();
+  for (const ticket of state.tickets) {
+    const client = String(ticket.client || "").trim();
+    if (client) {
+      clientSet.add(client);
+    }
+  }
+  const options = Array.from(clientSet).sort((a, b) => a.localeCompare(b));
+  const select = elements.clientFilterSelect;
+  select.textContent = "";
+  const allOption = document.createElement("option");
+  allOption.value = "";
+  allOption.textContent = "All clients";
+  select.append(allOption);
+  for (const client of options) {
+    const option = document.createElement("option");
+    option.value = client;
+    option.textContent = client;
+    select.append(option);
+  }
+
+  const hasSelection = state.clientFilter && options.includes(state.clientFilter);
+  if (!hasSelection) {
+    state.clientFilter = "";
+  }
+  select.value = state.clientFilter;
+}
+
 function updateTicketList() {
+  updateClientFilterOptions();
   renderTickets({
     tickets: state.tickets,
     events: state.events,
@@ -344,6 +379,7 @@ function updateTicketList() {
     countEl: elements.ticketsCount,
     searchTerm: state.searchTerm,
     statusFilters: state.statusFilters,
+    clientFilter: state.clientFilter,
     activeTicketId: state.activeTicketId,
     onSelect: (id) => {
       state.activeTicketId = id;
@@ -357,18 +393,21 @@ function updateTicketList() {
 function addTicket() {
   const key = extractTicketKey(elements.ticketKeyInput.value);
   const title = elements.ticketTitleInput.value.trim();
+  const client = elements.ticketClientInput.value.trim();
   if (!key && !title) return;
 
   const ticket = {
     id: safeUUID(),
     key,
     title,
-    status: "open"
+    status: "open",
+    client
   };
 
   state.tickets = [ticket, ...state.tickets];
   elements.ticketKeyInput.value = "";
   elements.ticketTitleInput.value = "";
+  elements.ticketClientInput.value = "";
   state.activeTicketId = ticket.id;
   syncStorage();
   updateTicketList();
@@ -446,7 +485,8 @@ async function importTicketsFromCsv(file) {
         id: safeUUID(),
         key,
         title: subject,
-        status
+        status,
+        client: ""
       };
       nextTickets.unshift(ticket);
       keyLookup.set(ticket.key, ticket);
@@ -587,6 +627,9 @@ function wireInputs() {
   elements.ticketTitleInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") addTicket();
   });
+  elements.ticketClientInput.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") addTicket();
+  });
 
   elements.ticketSearchInput.addEventListener(
     "input",
@@ -605,6 +648,13 @@ function wireInputs() {
       updateTicketList();
     });
   });
+
+  if (elements.clientFilterSelect) {
+    elements.clientFilterSelect.addEventListener("change", (event) => {
+      state.clientFilter = event.target.value;
+      updateTicketList();
+    });
+  }
 
   elements.exportBtn.addEventListener("click", () => {
     const csv = buildCsv(state.tickets, state.events);
@@ -645,7 +695,12 @@ async function init() {
     .map((ticket) => {
       const normalized = normalizeTicketRecord(ticket);
       if (!normalized) return null;
-      if (!ticket || ticket.status !== normalized.status || ticket.id !== normalized.id) {
+      if (
+        !ticket ||
+        ticket.status !== normalized.status ||
+        ticket.id !== normalized.id ||
+        ticket.client !== normalized.client
+      ) {
         didNormalizeTickets = true;
       }
       return normalized;

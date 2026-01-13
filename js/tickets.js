@@ -27,12 +27,14 @@ export function renderTickets({
   countEl,
   searchTerm,
   statusFilters,
+  clientFilter,
   activeTicketId,
   onSelect,
   onAddLog,
   onDelete
 }) {
   const term = String(searchTerm || "").trim().toLowerCase();
+  const clientTerm = String(clientFilter || "").trim().toLowerCase();
   const statusSet = new Set(
     Array.isArray(statusFilters)
       ? statusFilters.map((status) => String(status || "").toLowerCase())
@@ -44,6 +46,12 @@ export function renderTickets({
     const status = String(ticket.status || "open").toLowerCase();
     if (statusSet.size > 0 && !statusSet.has(status)) {
       return false;
+    }
+    if (clientTerm) {
+      const client = String(ticket.client || "").toLowerCase();
+      if (client !== clientTerm) {
+        return false;
+      }
     }
     if (!term) return true;
     const key = String(ticket.key || "").toLowerCase();
