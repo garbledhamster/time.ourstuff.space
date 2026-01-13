@@ -152,6 +152,9 @@ textarea.input{
   min-height: 120px;
   resize: vertical;
 }
+.hiddenInput{
+  display:none;
+}
 
 /* Main */
 .main{

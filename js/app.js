@@ -1,4 +1,4 @@
-import { buildCsv, downloadText } from "./csv.js";
+import { buildCsv, downloadText, parseCsv } from "./csv.js";
 import { createCalendar, toCalendarEvent } from "./calendar.js";
 import { createLogModal } from "./modal.js";
 import {
@@ -93,6 +93,8 @@ const elements = {
   ticketSearchInput: $("ticketSearchInput"),
   statusFilterInputs: document.querySelectorAll('input[name="ticketStatusFilter"]'),
   exportBtn: $("exportBtn"),
+  importBtn: $("importBtn"),
+  importInput: $("importInput"),
   prevBtn: $("prevBtn"),
   nextBtn: $("nextBtn"),
   todayBtn: $("todayBtn"),
@@ -368,6 +370,92 @@ function addTicket() {
   elements.ticketKeyInput.value = "";
   elements.ticketTitleInput.value = "";
   state.activeTicketId = ticket.id;
+  syncStorage();
+  updateTicketList();
+}
+
+function normalizeHeader(value) {
+  return String(value || "")
+    .trim()
+    .toLowerCase()
+    .replace(/\s+/g, " ");
+}
+
+function findHeaderIndex(headers, options) {
+  for (const option of options) {
+    const idx = headers.indexOf(option);
+    if (idx !== -1) return idx;
+  }
+  return -1;
+}
+
+async function importTicketsFromCsv(file) {
+  if (!file) return;
+  const text = await file.text();
+  const rows = parseCsv(text);
+  if (!rows.length) {
+    reportError("CSV import failed: file was empty.");
+    return;
+  }
+
+  const headers = rows[0].map(normalizeHeader);
+  const idIndex = findHeaderIndex(headers, ["id", "ticket id", "ticket number"]);
+  const subjectIndex = findHeaderIndex(headers, ["subject", "ticket title", "title"]);
+  const statusIndex = findHeaderIndex(headers, ["ticket status", "status"]);
+
+  if (idIndex === -1 || subjectIndex === -1 || statusIndex === -1) {
+    reportError("CSV import failed: missing required headers (id, subject, ticket status).");
+    return;
+  }
+
+  const nextTickets = [...state.tickets];
+  const keyLookup = new Map(nextTickets.map((ticket) => [String(ticket.key), ticket]));
+  let didChange = false;
+
+  for (const row of rows.slice(1)) {
+    if (!row || row.every((value) => !String(value || "").trim())) continue;
+    const rawId = String(row[idIndex] || "").trim();
+    const subject = String(row[subjectIndex] || "").trim();
+    const statusRaw = String(row[statusIndex] || "").trim();
+    if (!rawId) continue;
+
+    const key = extractTicketKey(rawId);
+    const status = statusRaw ? statusRaw.toLowerCase() : "open";
+    const existing = keyLookup.get(key) || nextTickets.find((ticket) => String(ticket.id) === rawId);
+
+    if (existing) {
+      const updated = { ...existing };
+      if (key && updated.key !== key) updated.key = key;
+      if (subject && updated.title !== subject) updated.title = subject;
+      if (status && updated.status !== status) updated.status = status;
+
+      if (
+        updated.key !== existing.key ||
+        updated.title !== existing.title ||
+        updated.status !== existing.status
+      ) {
+        const index = nextTickets.findIndex((ticket) => ticket.id === existing.id);
+        if (index >= 0) {
+          nextTickets[index] = updated;
+          didChange = true;
+          keyLookup.set(updated.key, updated);
+        }
+      }
+    } else {
+      const ticket = {
+        id: safeUUID(),
+        key,
+        title: subject,
+        status
+      };
+      nextTickets.unshift(ticket);
+      keyLookup.set(ticket.key, ticket);
+      didChange = true;
+    }
+  }
+
+  if (!didChange) return;
+  state.tickets = nextTickets;
   syncStorage();
   updateTicketList();
 }
