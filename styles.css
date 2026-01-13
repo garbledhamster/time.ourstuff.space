@@ -199,6 +199,10 @@ textarea.input{
   gap:10px;
   align-items:flex-start;
 }
+.ticketItem.active{
+  border-color: rgba(122,162,255,.55);
+  box-shadow: 0 0 0 1px rgba(122,162,255,.25), 0 10px 22px rgba(0,0,0,.18);
+}
 .ticketItem:active{ cursor:grabbing; }
 .dragHandle{
   width: 12px;
