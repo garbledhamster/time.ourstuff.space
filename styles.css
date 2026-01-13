@@ -83,6 +83,25 @@ body{
   margin: 0 4px;
 }
 
+/* Error banner */
+.errorBanner{
+  display:none;
+  padding: 10px 14px;
+  border-bottom: 1px solid rgba(255,107,107,.35);
+  background: rgba(255,107,107,.12);
+  color: rgba(255,240,240,.95);
+  font-size: 12px;
+  line-height: 1.4;
+}
+.errorBanner.visible{
+  display:block;
+}
+.errorBanner .errorEntry + .errorEntry{
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(255,255,255,.12);
+}
+
 /* Buttons / inputs */
 .btn{
   border: 1px solid var(--border);

@@ -34,11 +34,35 @@ const elements = {
   openDrawerBtn: $("openDrawerBtn"),
   closeDrawerBtn: $("closeDrawerBtn"),
   drawerOverlay: $("drawerOverlay"),
-  ticketsPanel: $("ticketsPanel")
+  ticketsPanel: $("ticketsPanel"),
+  errorBanner: $("errorBanner")
 };
 
 let calendar = null;
 let modal = null;
+
+function reportError(message, error) {
+  const details = error instanceof Error ? error.message : error ? String(error) : "";
+  console.error(message, error);
+  if (!elements.errorBanner) return;
+  const entry = document.createElement("div");
+  entry.className = "errorEntry";
+  entry.textContent = details ? `${message} ${details}` : message;
+  elements.errorBanner.append(entry);
+  elements.errorBanner.classList.add("visible");
+}
+
+window.addEventListener("error", (event) => {
+  if (event.error) {
+    reportError("Unexpected error:", event.error);
+  } else if (event.message) {
+    reportError("Unexpected error:", event.message);
+  }
+});
+
+window.addEventListener("unhandledrejection", (event) => {
+  reportError("Unhandled promise rejection:", event.reason);
+});
 
 function normalizeEventRecord(record) {
   if (!record) return null;
@@ -240,6 +264,13 @@ function wireInputs() {
 }
 
 async function init() {
+  if (typeof localforage === "undefined") {
+    reportError("localForage failed to load. Falling back to local storage.");
+  }
+  if (typeof FullCalendar === "undefined") {
+    throw new Error("FullCalendar failed to load.");
+  }
+
   const [tickets, events] = await Promise.all([loadTickets(), loadEvents()]);
   state.tickets = tickets;
   state.events = events.map(normalizeEventRecord).filter(Boolean);
@@ -275,4 +306,6 @@ async function init() {
   updateTicketList();
 }
 
-init();
+init().catch((error) => {
+  reportError("Failed to initialize the app.", error);
+});
