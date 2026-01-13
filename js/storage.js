@@ -23,7 +23,8 @@ const DB = hasLocalForage
 
 const KEYS = {
   tickets: "tickets_v1",
-  events: "events_v1"
+  events: "events_v1",
+  settings: "settings_v1"
 };
 
 export async function loadTickets() {
@@ -42,4 +43,13 @@ export async function loadEvents() {
 
 export async function saveEvents(events) {
   await DB.setItem(KEYS.events, events);
+}
+
+export async function loadSettings() {
+  const settings = await DB.getItem(KEYS.settings);
+  return settings && typeof settings === "object" ? settings : {};
+}
+
+export async function saveSettings(settings) {
+  await DB.setItem(KEYS.settings, settings);
 }
