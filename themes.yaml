@@ -1,0 +1,36 @@
+- id: midnight
+  label: Midnight Glow
+  colors:
+    primaryColor: "#7aa2ff"
+    secondaryColor: "#9cf6d6"
+    backgroundColor: "#0b1020"
+    surfaceColor: "#0f1730"
+    surfaceMutedColor: "#0c142a"
+    borderColor: "rgba(255,255,255,0.10)"
+    textColor: "rgba(255,255,255,0.92)"
+    textMutedColor: "rgba(255,255,255,0.65)"
+    dangerColor: "#ff6b6b"
+- id: sunrise
+  label: Sunrise
+  colors:
+    primaryColor: "#ff8a5c"
+    secondaryColor: "#ffd166"
+    backgroundColor: "#1b1325"
+    surfaceColor: "#241a33"
+    surfaceMutedColor: "#2b2040"
+    borderColor: "rgba(255,255,255,0.12)"
+    textColor: "rgba(255,255,255,0.92)"
+    textMutedColor: "rgba(255,255,255,0.7)"
+    dangerColor: "#ff6b6b"
+- id: solar
+  label: Solar Day
+  colors:
+    primaryColor: "#3b82f6"
+    secondaryColor: "#22c55e"
+    backgroundColor: "#f5f3ff"
+    surfaceColor: "#ffffff"
+    surfaceMutedColor: "#ede9fe"
+    borderColor: "rgba(30,41,59,0.16)"
+    textColor: "rgba(15,23,42,0.95)"
+    textMutedColor: "rgba(30,41,59,0.65)"
+    dangerColor: "#ef4444"
