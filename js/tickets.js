@@ -26,21 +26,30 @@ export function renderTickets({
   listEl,
   countEl,
   searchTerm,
+  statusFilters,
   activeTicketId,
   onSelect,
   onAddLog,
   onDelete
 }) {
   const term = String(searchTerm || "").trim().toLowerCase();
+  const statusSet = new Set(
+    Array.isArray(statusFilters)
+      ? statusFilters.map((status) => String(status || "").toLowerCase())
+      : []
+  );
   const totals = getTicketTotals(events);
 
-  const filtered = term
-    ? tickets.filter((ticket) => {
-        const key = String(ticket.key || "").toLowerCase();
-        const title = String(ticket.title || "").toLowerCase();
-        return key.includes(term) || title.includes(term);
-      })
-    : tickets;
+  const filtered = tickets.filter((ticket) => {
+    const status = String(ticket.status || "open").toLowerCase();
+    if (statusSet.size > 0 && !statusSet.has(status)) {
+      return false;
+    }
+    if (!term) return true;
+    const key = String(ticket.key || "").toLowerCase();
+    const title = String(ticket.title || "").toLowerCase();
+    return key.includes(term) || title.includes(term);
+  });
 
   listEl.textContent = "";
   countEl.textContent = String(tickets.length);
