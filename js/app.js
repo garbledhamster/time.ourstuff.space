@@ -599,7 +599,7 @@ function handleCalendarSelect(info) {
 
 function handleEventPreview(event, clickX, clickY) {
   // If preview card is already showing for this event, open editor instead
-  if (previewCard.isVisible() && previewCard.getCurrentEvent()?.id === event.id) {
+  if (previewCard.isVisible() && previewCard.getCurrentEventId() === event.id) {
     previewCard.hide();
     openEventEditor(event);
     return;

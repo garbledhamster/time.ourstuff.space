@@ -26,7 +26,8 @@ export function createLogModal({ onSave, onDelete } = {}) {
     const end = event.end ? new Date(event.end) : addMinutes(start, 30);
     titleEl.textContent = "Edit time log";
     subEl.textContent = ticketTitle || ticketKey || "Untitled";
-    eventTitleInput.value = event.title || "";
+    // Provide default title for legacy events without titles
+    eventTitleInput.value = event.title || ticketTitle || ticketKey || "Untitled";
     startInput.value = toLocalInputValue(start);
     endInput.value = toLocalInputValue(end);
     notesInput.value = event.extendedProps?.notes || "";

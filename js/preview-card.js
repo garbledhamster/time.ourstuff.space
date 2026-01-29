@@ -5,6 +5,12 @@ import { $ } from "./utils.js";
  */
 function formatDuration(startDate, endDate) {
   const diffMs = endDate.getTime() - startDate.getTime();
+  
+  // Handle negative or invalid durations
+  if (diffMs < 0 || isNaN(diffMs)) {
+    return '0s';
+  }
+  
   const totalSeconds = Math.floor(diffMs / 1000);
   
   const hours = Math.floor(totalSeconds / 3600);
@@ -58,11 +64,17 @@ function positionCard(card, clickX, clickY) {
  */
 export function createPreviewCard() {
   let card = null;
-  let currentEvent = null;
+  let currentEventId = null;
   let clickOutsideListenerAdded = false;
   
   function handleClickOutside(e) {
     if (card && !card.contains(e.target) && card.classList.contains('visible')) {
+      hide();
+    }
+  }
+  
+  function handleEscapeKey(e) {
+    if (e.key === 'Escape' && card && card.classList.contains('visible')) {
       hide();
     }
   }
@@ -72,16 +84,19 @@ export function createPreviewCard() {
     
     card = document.createElement('div');
     card.className = 'previewCard';
+    card.setAttribute('role', 'dialog');
+    card.setAttribute('aria-modal', 'false');
+    card.setAttribute('aria-labelledby', 'previewCardTitle');
     card.innerHTML = `
       <div class="previewCard-header">
-        <div class="previewCard-title"></div>
+        <div class="previewCard-title" id="previewCardTitle"></div>
         <button class="previewCard-close" type="button" aria-label="Close">
-          <svg class="btn-icon" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
         </button>
       </div>
       <div class="previewCard-body">
         <div class="previewCard-time">
-          <svg class="btn-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
           <span class="previewCard-duration"></span>
         </div>
         <div class="previewCard-note"></div>
@@ -98,11 +113,12 @@ export function createPreviewCard() {
     
     document.body.appendChild(card);
     
-    // Add click outside handler only once
+    // Add click outside and keyboard handlers only once
     if (!clickOutsideListenerAdded) {
       // Use capture phase and add delay to prevent immediate close
       setTimeout(() => {
         document.addEventListener('click', handleClickOutside, true);
+        document.addEventListener('keydown', handleEscapeKey);
         clickOutsideListenerAdded = true;
       }, 100);
     }
@@ -111,7 +127,7 @@ export function createPreviewCard() {
   }
   
   function show(event, ticketTitle, clickX, clickY) {
-    currentEvent = event;
+    currentEventId = event.id;
     const cardEl = create();
     
     const start = event.start ? new Date(event.start) : new Date();
@@ -145,7 +161,7 @@ export function createPreviewCard() {
   function hide() {
     if (card) {
       card.classList.remove('visible');
-      currentEvent = null;
+      currentEventId = null;
     }
   }
   
@@ -153,9 +169,9 @@ export function createPreviewCard() {
     return card && card.classList.contains('visible');
   }
   
-  function getCurrentEvent() {
-    return currentEvent;
+  function getCurrentEventId() {
+    return currentEventId;
   }
   
-  return { show, hide, isVisible, getCurrentEvent };
+  return { show, hide, isVisible, getCurrentEventId };
 }
