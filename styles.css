@@ -201,51 +201,6 @@ textarea.input{
   margin-bottom:8px;
 }
 
-.themeSection{
-  display:grid;
-  gap:8px;
-  margin-top: 10px;
-}
-
-.themeCustom{
-  display:none;
-}
-
-.themeCustom.visible{
-  display:grid;
-  gap:8px;
-}
-
-.colorGrid{
-  display:grid;
-  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
-  gap:8px;
-}
-
-.colorField{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:8px;
-  padding: 6px 8px;
-  border-radius: 12px;
-  border: 1px solid var(--border-color);
-  background: color-mix(in srgb, var(--text-color) 4%, transparent);
-}
-
-.colorField label{
-  font-size: 11px;
-  color: var(--text-muted-color);
-}
-
-.colorField input[type="color"]{
-  width: 38px;
-  height: 28px;
-  padding: 0;
-  border: none;
-  background: transparent;
-}
-
 .ticketList{
   padding: 10px 10px 14px;
   overflow:auto;
@@ -365,11 +320,47 @@ textarea.input{
   pointer-events:auto;
 }
 
+/* View menu popout (mobile) */
+.viewMenuWrap{
+  position: relative;
+}
+.viewMenu{
+  display: none;
+  position: absolute;
+  top: 100%;
+  right: 0;
+  margin-top: 8px;
+  padding: 10px;
+  background: color-mix(in srgb, var(--surface-color) 95%, transparent);
+  backdrop-filter: blur(12px);
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  box-shadow: 0 10px 30px rgba(0,0,0,.4);
+  z-index: 60;
+  min-width: 140px;
+  flex-direction: column;
+  gap: 6px;
+}
+.viewMenu.open{
+  display: flex;
+}
+.viewMenu .btn{
+  width: 100%;
+  justify-content: center;
+}
+.menuDivider{
+  height: 1px;
+  background: var(--border-color);
+  margin: 4px 0;
+}
+
 /* In mobile mode we treat ticketsPanel as a drawer */
 .mobileOnly{ display:none; }
+.desktopOnly{ display:flex; }
 
 @media (max-width: 980px){
   .mobileOnly{ display:inline-flex; }
+  .desktopOnly{ display:none; }
   .smallBtn{ display:inline-flex; }
 
   .ticketsPanel{

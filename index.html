@@ -25,7 +25,7 @@
 
       <div class="spacer"></div>
 
-      <div class="viewGroup">
+      <div class="viewGroup desktopOnly">
         <button class="btn" id="prevBtn" title="Previous">←</button>
         <button class="btn" id="todayBtn" title="Today">Today</button>
         <button class="btn" id="nextBtn" title="Next">→</button>
@@ -36,6 +36,20 @@
         <button class="btn" data-view="timeGridWeek">Week</button>
         <button class="btn" data-view="dayGridMonth">Month</button>
         <button class="btn" data-view="listWeek">List</button>
+      </div>
+
+      <div class="viewMenuWrap mobileOnly">
+        <button class="btn" id="viewMenuBtn" title="View options">☰ Views</button>
+        <div class="viewMenu" id="viewMenu">
+          <button class="btn" id="prevBtnMobile" title="Previous">← Prev</button>
+          <button class="btn" id="todayBtnMobile" title="Today">Today</button>
+          <button class="btn" id="nextBtnMobile" title="Next">Next →</button>
+          <span class="menuDivider"></span>
+          <button class="btn" data-view="timeGridDay">Day</button>
+          <button class="btn" data-view="timeGridWeek">Week</button>
+          <button class="btn" data-view="dayGridMonth">Month</button>
+          <button class="btn" data-view="listWeek">List</button>
+        </div>
       </div>
     </header>
 
@@ -97,11 +111,6 @@
             <input class="input" id="ticketSearchInput" placeholder="Search tickets..." />
           </div>
 
-          <div class="themeSection">
-            <div class="label">Theme</div>
-            <select class="input" id="themePresetSelect"></select>
-            <div class="themeCustom" id="themeCustomFields"></div>
-          </div>
         </div>
 
         <div class="ticketList" id="ticketList"></div>
@@ -162,7 +171,6 @@
   <!-- Libraries -->
   <script src="https://cdn.jsdelivr.net/npm/fullcalendar@6.1.11/index.global.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/localforage/1.10.0/localforage.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/js-yaml@4.1.0/dist/js-yaml.min.js"></script>
 
   <!-- App (ES Modules) -->
   <script type="module" src="./js/app.js"></script>
