@@ -330,6 +330,41 @@ textarea.input{
 .ticketClient:empty{
   display:none;
 }
+.ticketEntries{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+.entriesLabel{
+  font-size: 11px;
+  color: var(--text-muted-color);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+.entriesList{
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.entryItem{
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--text-color) 2%, transparent);
+}
+.entryTime{
+  font-size: 11px;
+  color: var(--text-color);
+  font-weight: 500;
+}
+.entryNotes{
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--text-muted-color);
+  line-height: 1.4;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
 .ticketNote{
   margin-top: 10px;
   padding-top: 10px;

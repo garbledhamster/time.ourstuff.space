@@ -24,7 +24,9 @@ const DB = hasLocalForage
 const KEYS = {
   tickets: "tickets_v1",
   events: "events_v1",
-  settings: "settings_v1"
+  settings: "settings_v1",
+  artifacts: "artifacts_v1",
+  migrated: "migrated_to_artifacts_v1"
 };
 
 export async function loadTickets() {
@@ -52,4 +54,21 @@ export async function loadSettings() {
 
 export async function saveSettings(settings) {
   await DB.setItem(KEYS.settings, settings);
+}
+
+export async function loadArtifacts() {
+  const a = await DB.getItem(KEYS.artifacts);
+  return Array.isArray(a) ? a : [];
+}
+
+export async function saveArtifacts(artifacts) {
+  await DB.setItem(KEYS.artifacts, artifacts);
+}
+
+export async function checkMigrated() {
+  return await DB.getItem(KEYS.migrated);
+}
+
+export async function setMigrated(value) {
+  await DB.setItem(KEYS.migrated, value);
 }
