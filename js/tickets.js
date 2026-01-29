@@ -96,13 +96,13 @@ export function renderTickets({
     addBtn.className = "iconBtn";
     addBtn.type = "button";
     addBtn.title = "Add time block";
-    addBtn.textContent = "+";
+    addBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
 
     const delBtn = document.createElement("button");
     delBtn.className = "iconBtn danger";
     delBtn.type = "button";
     delBtn.title = "Delete ticket";
-    delBtn.textContent = "×";
+    delBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
 
     actions.append(addBtn, delBtn);
     meta.append(badge, actions);

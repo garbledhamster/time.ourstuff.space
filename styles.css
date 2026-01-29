@@ -501,3 +501,26 @@ textarea.input{
 .fc .fc-event-title{ font-weight: 900; }
 .fc .fc-event-time{ font-weight: 800; opacity:.9; }
 .fc .fc-daygrid-event{ padding: 2px 4px !important; }
+
+/* Button icons */
+.btn-icon{
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+  stroke: currentColor;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+}
+.iconBtn .btn-icon{
+  width: 14px;
+  height: 14px;
+}
+.btn-icon-only{
+  padding: 9px;
+}
+.btn-icon-only .btn-icon{
+  width: 18px;
+  height: 18px;
+}
