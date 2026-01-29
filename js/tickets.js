@@ -135,8 +135,49 @@ export function renderTickets({
     meta.append(badge, actions);
     body.append(key, title, client, meta);
 
-    // Add note field if ticket is expanded (active and not collapsed)
+    // Add note field and time entries if ticket is expanded (active and not collapsed)
     if (ticket.id === activeTicketId && !isCollapsed) {
+      // Time entries section
+      const ticketEvents = events.filter(e => e.ticketId === ticket.id);
+      if (ticketEvents.length > 0) {
+        const entriesSection = document.createElement("div");
+        entriesSection.className = "ticketEntries";
+        
+        const entriesLabel = document.createElement("div");
+        entriesLabel.className = "entriesLabel";
+        entriesLabel.textContent = `Time Entries (${ticketEvents.length})`;
+        
+        const entriesList = document.createElement("div");
+        entriesList.className = "entriesList";
+        
+        for (const event of ticketEvents) {
+          const entry = document.createElement("div");
+          entry.className = "entryItem";
+          
+          const start = new Date(event.start);
+          const end = new Date(event.end);
+          const duration = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+          
+          const entryTime = document.createElement("div");
+          entryTime.className = "entryTime";
+          entryTime.textContent = `${start.toLocaleString()} - ${end.toLocaleTimeString()} (${formatMinutes(duration)})`;
+          
+          entry.appendChild(entryTime);
+          
+          if (event.notes && event.notes.trim()) {
+            const entryNotes = document.createElement("div");
+            entryNotes.className = "entryNotes";
+            entryNotes.textContent = event.notes;
+            entry.appendChild(entryNotes);
+          }
+          
+          entriesList.appendChild(entry);
+        }
+        
+        entriesSection.append(entriesLabel, entriesList);
+        body.append(entriesSection);
+      }
+      
       const noteSection = document.createElement("div");
       noteSection.className = "ticketNote";
       
