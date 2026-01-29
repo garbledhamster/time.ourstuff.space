@@ -8,7 +8,11 @@ import {
   loadTickets,
   saveEvents,
   saveSettings,
-  saveTickets
+  saveTickets,
+  loadArtifacts,
+  saveArtifacts,
+  checkMigrated,
+  setMigrated
 } from "./storage.js";
 import { renderTickets } from "./tickets.js";
 import {
@@ -21,6 +25,14 @@ import {
   snapToMinutes,
   snapToEventBoundaries
 } from "./utils.js";
+import {
+  ticketToArtifact,
+  eventToArtifact,
+  artifactToTicket,
+  artifactToEvent,
+  migrateToArtifacts,
+  extractFromArtifacts
+} from "./artifacts.js";
 
 const DEFAULT_THEME_ID = "midnight";
 const DEFAULT_THEME_COLORS = {
@@ -81,6 +93,7 @@ let THEME_PRESETS = {
 const state = {
   tickets: [],
   events: [],
+  artifacts: [],
   activeTicketId: null,
   searchTerm: "",
   statusFilters: ["open", "in-progress"],
@@ -344,8 +357,20 @@ function normalizeTicketRecord(record) {
 }
 
 function syncStorage() {
+  // Update artifacts from current tickets and events
+  const ticketArtifacts = state.tickets.map(ticket => ticketToArtifact(ticket));
+  const eventArtifacts = state.events.map(event => {
+    const ticket = state.tickets.find(t => t.id === event.ticketId);
+    const ticketArtifactId = ticket?.artifactId || null;
+    return eventToArtifact({ ...event, ticketArtifactId });
+  });
+  
+  state.artifacts = [...ticketArtifacts, ...eventArtifacts];
+  
+  // Save both formats for now (backward compatibility)
   saveTickets(state.tickets);
   saveEvents(state.events);
+  saveArtifacts(state.artifacts);
 }
 
 function updateClientFilterOptions() {
@@ -757,27 +782,64 @@ async function init() {
     throw new Error("FullCalendar failed to load.");
   }
 
-  const [tickets, events, settings] = await Promise.all([loadTickets(), loadEvents(), loadSettings()]);
-  let didNormalizeTickets = false;
-  state.tickets = tickets
-    .map((ticket) => {
-      const normalized = normalizeTicketRecord(ticket);
-      if (!normalized) return null;
-      if (
-        !ticket ||
-        ticket.status !== normalized.status ||
-        ticket.id !== normalized.id ||
-        ticket.client !== normalized.client
-      ) {
-        didNormalizeTickets = true;
-      }
-      return normalized;
-    })
-    .filter(Boolean);
-  if (didNormalizeTickets) {
-    saveTickets(state.tickets);
+  // Load all data
+  const [tickets, events, settings, artifacts, migrated] = await Promise.all([
+    loadTickets(), 
+    loadEvents(), 
+    loadSettings(),
+    loadArtifacts(),
+    checkMigrated()
+  ]);
+  
+  // Check if we need to migrate
+  if (!migrated && tickets.length > 0 && artifacts.length === 0) {
+    console.log("Migrating data to artifact format...");
+    // Perform migration
+    const migratedArtifacts = migrateToArtifacts(tickets, events);
+    await saveArtifacts(migratedArtifacts);
+    await setMigrated(true);
+    state.artifacts = migratedArtifacts;
+    console.log(`Migrated ${migratedArtifacts.length} artifacts`);
+  } else if (artifacts.length > 0) {
+    // Use artifacts as source of truth
+    state.artifacts = artifacts;
+    const extracted = extractFromArtifacts(artifacts);
+    // Override loaded tickets/events with artifact data
+    const extractedTickets = extracted.tickets;
+    const extractedEvents = extracted.events;
+    
+    // Use extracted data if available, otherwise use loaded data
+    state.tickets = extractedTickets.length > 0 ? extractedTickets : tickets;
+    state.events = extractedEvents.length > 0 ? extractedEvents : events;
+  } else {
+    // No migration needed, no artifacts yet
+    state.artifacts = [];
   }
-  state.events = events.map(normalizeEventRecord).filter(Boolean);
+  
+  // Normalize tickets if not using artifacts
+  if (state.tickets.length === 0 || !migrated) {
+    let didNormalizeTickets = false;
+    state.tickets = tickets
+      .map((ticket) => {
+        const normalized = normalizeTicketRecord(ticket);
+        if (!normalized) return null;
+        if (
+          !ticket ||
+          ticket.status !== normalized.status ||
+          ticket.id !== normalized.id ||
+          ticket.client !== normalized.client
+        ) {
+          didNormalizeTickets = true;
+        }
+        return normalized;
+      })
+      .filter(Boolean);
+    if (didNormalizeTickets) {
+      saveTickets(state.tickets);
+    }
+    state.events = events.map(normalizeEventRecord).filter(Boolean);
+  }
+  
   state.activeTicketId = state.tickets[0]?.id || null;
   state.settings = getThemeSettings(settings);
   applyThemeColors(getActiveThemeColors());
