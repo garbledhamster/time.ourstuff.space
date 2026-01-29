@@ -183,11 +183,23 @@
         <div class="grid2">
           <div>
             <div class="label">Start</div>
-            <input class="input" id="modalStart" type="datetime-local" />
+            <div class="timeInputGroup">
+              <input class="input" id="modalStart" type="datetime-local" />
+              <button class="btn" id="modalStartNowBtn" type="button" title="Set to current time">
+                <svg class="btn-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Now
+              </button>
+            </div>
           </div>
           <div>
             <div class="label">End</div>
-            <input class="input" id="modalEnd" type="datetime-local" />
+            <div class="timeInputGroup">
+              <input class="input" id="modalEnd" type="datetime-local" />
+              <button class="btn" id="modalEndNowBtn" type="button" title="Set to current time">
+                <svg class="btn-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+                Now
+              </button>
+            </div>
           </div>
         </div>
 
