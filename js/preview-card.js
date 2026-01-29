@@ -59,6 +59,13 @@ function positionCard(card, clickX, clickY) {
 export function createPreviewCard() {
   let card = null;
   let currentEvent = null;
+  let clickOutsideListenerAdded = false;
+  
+  function handleClickOutside(e) {
+    if (card && !card.contains(e.target) && card.classList.contains('visible')) {
+      hide();
+    }
+  }
   
   function create() {
     if (card) return card;
@@ -89,14 +96,17 @@ export function createPreviewCard() {
       hide();
     });
     
-    // Click outside to close
-    document.addEventListener('click', (e) => {
-      if (card && !card.contains(e.target) && card.classList.contains('visible')) {
-        hide();
-      }
-    });
-    
     document.body.appendChild(card);
+    
+    // Add click outside handler only once
+    if (!clickOutsideListenerAdded) {
+      // Use capture phase and add delay to prevent immediate close
+      setTimeout(() => {
+        document.addEventListener('click', handleClickOutside, true);
+        clickOutsideListenerAdded = true;
+      }, 100);
+    }
+    
     return card;
   }
   
