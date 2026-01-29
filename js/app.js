@@ -357,12 +357,33 @@ function normalizeTicketRecord(record) {
 }
 
 function syncStorage() {
+  // Build a map of ticketId to artifactId for efficient lookups
+  const ticketIdToArtifactId = new Map();
+  for (const ticket of state.tickets) {
+    if (ticket.artifactId) {
+      ticketIdToArtifactId.set(ticket.id, ticket.artifactId);
+    }
+  }
+  
   // Update artifacts from current tickets and events
-  const ticketArtifacts = state.tickets.map(ticket => ticketToArtifact(ticket));
+  const ticketArtifacts = state.tickets.map(ticket => {
+    const artifact = ticketToArtifact(ticket);
+    // Preserve the artifactId in the ticket for future syncs
+    if (!ticket.artifactId) {
+      ticket.artifactId = artifact.id;
+      ticketIdToArtifactId.set(ticket.id, artifact.id);
+    }
+    return artifact;
+  });
+  
   const eventArtifacts = state.events.map(event => {
-    const ticket = state.tickets.find(t => t.id === event.ticketId);
-    const ticketArtifactId = ticket?.artifactId || null;
-    return eventToArtifact({ ...event, ticketArtifactId });
+    const ticketArtifactId = ticketIdToArtifactId.get(event.ticketId) || null;
+    const artifact = eventToArtifact({ ...event, ticketArtifactId });
+    // Preserve the artifactId in the event for future syncs
+    if (!event.artifactId) {
+      event.artifactId = artifact.id;
+    }
+    return artifact;
   });
   
   state.artifacts = [...ticketArtifacts, ...eventArtifacts];
@@ -792,32 +813,27 @@ async function init() {
   ]);
   
   // Check if we need to migrate
-  if (!migrated && tickets.length > 0 && artifacts.length === 0) {
+  if (!migrated && tickets.length > 0) {
     console.log("Migrating data to artifact format...");
     // Perform migration
     const migratedArtifacts = migrateToArtifacts(tickets, events);
     await saveArtifacts(migratedArtifacts);
     await setMigrated(true);
+    
+    // Extract migrated data to use in the app
+    const extracted = extractFromArtifacts(migratedArtifacts);
+    state.tickets = extracted.tickets;
+    state.events = extracted.events;
     state.artifacts = migratedArtifacts;
     console.log(`Migrated ${migratedArtifacts.length} artifacts`);
   } else if (artifacts.length > 0) {
     // Use artifacts as source of truth
     state.artifacts = artifacts;
     const extracted = extractFromArtifacts(artifacts);
-    // Override loaded tickets/events with artifact data
-    const extractedTickets = extracted.tickets;
-    const extractedEvents = extracted.events;
-    
-    // Use extracted data if available, otherwise use loaded data
-    state.tickets = extractedTickets.length > 0 ? extractedTickets : tickets;
-    state.events = extractedEvents.length > 0 ? extractedEvents : events;
+    state.tickets = extracted.tickets;
+    state.events = extracted.events;
   } else {
-    // No migration needed, no artifacts yet
-    state.artifacts = [];
-  }
-  
-  // Normalize tickets if not using artifacts
-  if (state.tickets.length === 0 || !migrated) {
+    // No artifacts yet, normalize and use legacy data
     let didNormalizeTickets = false;
     state.tickets = tickets
       .map((ticket) => {
@@ -838,6 +854,7 @@ async function init() {
       saveTickets(state.tickets);
     }
     state.events = events.map(normalizeEventRecord).filter(Boolean);
+    state.artifacts = [];
   }
   
   state.activeTicketId = state.tickets[0]?.id || null;

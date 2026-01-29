@@ -156,6 +156,12 @@ export function renderTickets({
           
           const start = new Date(event.start);
           const end = new Date(event.end);
+          
+          // Validate dates
+          if (isNaN(start.getTime()) || isNaN(end.getTime())) {
+            continue; // Skip invalid entries
+          }
+          
           const duration = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
           
           const entryTime = document.createElement("div");

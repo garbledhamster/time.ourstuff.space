@@ -159,7 +159,7 @@ export function eventToArtifact(event, owner = "local_user") {
  * Convert artifact back to ticket format
  */
 export function artifactToTicket(artifact) {
-  if (artifact.type !== "time" || !artifact.data.time.ticketId) {
+  if (!artifact || artifact.type !== "time" || !artifact.data?.time?.ticketId) {
     return null;
   }
   
@@ -169,7 +169,7 @@ export function artifactToTicket(artifact) {
     title: artifact.title || "",
     status: artifact.data.time.legacyStatus || (artifact.status === "archived" ? "closed" : "open"),
     client: artifact.data.time.client || "",
-    note: artifact.data.core.text || "",
+    note: artifact.data.core?.text || "",
     artifactId: artifact.id,
     createdAt: artifact.createdAt,
     updatedAt: artifact.updatedAt
@@ -180,7 +180,7 @@ export function artifactToTicket(artifact) {
  * Convert artifact back to event format
  */
 export function artifactToEvent(artifact) {
-  if (artifact.type !== "time" || !artifact.data.time.eventId) {
+  if (!artifact || artifact.type !== "time" || !artifact.data?.time?.eventId) {
     return null;
   }
   
@@ -235,7 +235,7 @@ export function extractFromArtifacts(artifacts) {
   const events = [];
   
   for (const artifact of artifacts) {
-    if (artifact.type !== "time") continue;
+    if (!artifact || artifact.type !== "time" || !artifact.data?.time) continue;
     
     if (artifact.data.time.ticketId && !artifact.data.time.eventId) {
       // This is a ticket artifact
