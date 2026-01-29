@@ -298,6 +298,17 @@ textarea.input{
   -webkit-box-orient: vertical;
   overflow:hidden;
 }
+.ticketClient{
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--secondary-color);
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+}
+.ticketClient:empty{
+  display:none;
+}
 .ticketMeta{
   margin-top: 8px;
   display:flex;

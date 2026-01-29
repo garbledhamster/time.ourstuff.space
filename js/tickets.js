@@ -83,6 +83,12 @@ export function renderTickets({
     title.className = "ticketTitle";
     title.textContent = ticket.title || normalizeTitle(ticket.key, "");
 
+    const client = document.createElement("div");
+    client.className = "ticketClient";
+    if (ticket.client) {
+      client.textContent = ticket.client;
+    }
+
     const meta = document.createElement("div");
     meta.className = "ticketMeta";
 
@@ -106,7 +112,7 @@ export function renderTickets({
 
     actions.append(addBtn, delBtn);
     meta.append(badge, actions);
-    body.append(key, title, meta);
+    body.append(key, title, client, meta);
     item.append(handle, body);
 
     addBtn.addEventListener("click", (event) => {
