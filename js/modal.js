@@ -4,6 +4,7 @@ export function createLogModal({ onSave, onDelete } = {}) {
   const overlay = $("modalOverlay");
   const titleEl = $("modalTitle");
   const subEl = $("modalSub");
+  const eventTitleInput = $("modalEventTitle");
   const startInput = $("modalStart");
   const endInput = $("modalEnd");
   const notesInput = $("modalNotes");
@@ -25,17 +26,21 @@ export function createLogModal({ onSave, onDelete } = {}) {
     const end = event.end ? new Date(event.end) : addMinutes(start, 30);
     titleEl.textContent = "Edit time log";
     subEl.textContent = ticketTitle || ticketKey || "Untitled";
+    // Provide default title for legacy events without titles
+    eventTitleInput.value = event.title || ticketTitle || ticketKey || "Untitled";
     startInput.value = toLocalInputValue(start);
     endInput.value = toLocalInputValue(end);
     notesInput.value = event.extendedProps?.notes || "";
     overlay.classList.add("open");
-    startInput.focus();
+    eventTitleInput.focus();
   }
 
   function handleSave() {
     if (!currentEvent) return;
     const start = fromLocalInputValue(startInput.value);
     const end = fromLocalInputValue(endInput.value);
+    const title = eventTitleInput.value.trim();
+    
     if (!start || !end) {
       alert("Please enter valid start and end times.");
       return;
@@ -44,9 +49,14 @@ export function createLogModal({ onSave, onDelete } = {}) {
       alert("End time must be after the start time.");
       return;
     }
+    if (!title) {
+      alert("Please enter a title for the event.");
+      return;
+    }
     if (onSave) {
       onSave({
         event: currentEvent,
+        title,
         start,
         end,
         notes: notesInput.value.trim()

@@ -571,3 +571,112 @@ textarea.input{
   width: 18px;
   height: 18px;
 }
+
+/* Preview Card */
+.previewCard {
+  position: fixed;
+  z-index: 10000;
+  min-width: 280px;
+  max-width: 360px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: var(--surface-color);
+  box-shadow: var(--shadow);
+  opacity: 0;
+  visibility: hidden;
+  transform: scale(0.95);
+  transition: all 0.15s ease;
+}
+
+.previewCard.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: scale(1);
+}
+
+.previewCard-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.previewCard-title {
+  font-weight: 700;
+  font-size: 14px;
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.previewCard-close {
+  border: none;
+  background: transparent;
+  color: var(--text-muted-color);
+  padding: 4px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: all 0.15s ease;
+}
+
+.previewCard-close:hover {
+  background: color-mix(in srgb, var(--text-color) 10%, transparent);
+  color: var(--text-color);
+}
+
+.previewCard-body {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.previewCard-time {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--primary-color);
+}
+
+.previewCard-time .btn-icon {
+  width: 20px;
+  height: 20px;
+  stroke: var(--primary-color);
+}
+
+.previewCard-duration {
+  font-variant-numeric: tabular-nums;
+}
+
+.previewCard-note {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text-muted-color);
+  padding: 10px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--text-color) 4%, transparent);
+  border: 1px solid var(--border-color);
+  max-height: 200px;
+  overflow-y: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.previewCard-hint {
+  font-size: 11px;
+  color: var(--text-muted-color);
+  text-align: center;
+  padding: 8px;
+  border-radius: 8px;
+  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
+  border: 1px solid color-mix(in srgb, var(--primary-color) 25%, transparent);
+}
