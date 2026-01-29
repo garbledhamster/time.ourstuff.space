@@ -12,6 +12,8 @@ export function createLogModal({ onSave, onDelete } = {}) {
   const cancelBtn = $("cancelModalBtn");
   const saveBtn = $("saveModalBtn");
   const deleteBtn = $("deleteEventBtn");
+  const startNowBtn = $("modalStartNowBtn");
+  const endNowBtn = $("modalEndNowBtn");
 
   let currentEvent = null;
 
@@ -80,6 +82,12 @@ export function createLogModal({ onSave, onDelete } = {}) {
   });
   saveBtn.addEventListener("click", handleSave);
   deleteBtn.addEventListener("click", handleDelete);
+  startNowBtn.addEventListener("click", () => {
+    startInput.value = toLocalInputValue(new Date());
+  });
+  endNowBtn.addEventListener("click", () => {
+    endInput.value = toLocalInputValue(new Date());
+  });
 
   return { open, close };
 }
