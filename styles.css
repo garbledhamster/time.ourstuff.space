@@ -207,6 +207,12 @@ textarea.input{
   margin-top: 10px;
 }
 
+.themeSection > .input{
+  background: var(--primary-color);
+  color: var(--text-color);
+  border-color: color-mix(in srgb, var(--primary-color) 60%, transparent);
+}
+
 .themeCustom{
   display:none;
 }
@@ -265,6 +271,14 @@ textarea.input{
   gap:10px;
   align-items:flex-start;
 }
+.ticketItem.collapsed .ticketTitle,
+.ticketItem.collapsed .ticketClient,
+.ticketItem.collapsed .ticketMeta{
+  display:none;
+}
+.ticketItem.collapsed{
+  padding: 6px 10px;
+}
 .ticketItem.active{
   border-color: color-mix(in srgb, var(--primary-color) 55%, transparent);
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 30%, transparent), 0 10px 22px rgba(0,0,0,.18);
@@ -288,6 +302,13 @@ textarea.input{
   overflow:hidden;
   text-overflow:ellipsis;
 }
+.ticketKey a{
+  color: var(--primary-color);
+  text-decoration:none;
+}
+.ticketKey a:hover{
+  text-decoration:underline;
+}
 .ticketTitle{
   margin-top: 3px;
   font-size: 12px;
@@ -308,6 +329,21 @@ textarea.input{
 }
 .ticketClient:empty{
   display:none;
+}
+.ticketNote{
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid var(--border-color);
+}
+.noteLabel{
+  font-size: 11px;
+  color: var(--text-muted-color);
+  margin-bottom: 6px;
+}
+.noteInput{
+  min-height: 80px;
+  resize: vertical;
+  font-size: 12px;
 }
 .ticketMeta{
   margin-top: 8px;
