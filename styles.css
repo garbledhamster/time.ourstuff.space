@@ -492,16 +492,16 @@ textarea.input{
   gap: 10px;
 }
 .timeInputGroup{
-  display:flex;
+  display: flex;
   gap: 6px;
-  align-items:flex-start;
+  align-items: flex-start;
 }
 .timeInputGroup .input{
-  flex:1;
+  flex: 1;
 }
 .timeInputGroup .btn{
-  flex-shrink:0;
-  white-space:nowrap;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 .label{
   font-size: 12px;
