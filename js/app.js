@@ -1,6 +1,7 @@
 import { buildCsv, downloadText, parseCsv } from "./csv.js";
 import { createCalendar, toCalendarEvent } from "./calendar.js";
 import { createLogModal } from "./modal.js";
+import { createPreviewCard } from "./preview-card.js";
 import {
   loadEvents,
   loadSettings,
@@ -113,6 +114,7 @@ const elements = {
 
 let calendar = null;
 let modal = null;
+let previewCard = null;
 
 function reportError(message, error) {
   const details = error instanceof Error ? error.message : error ? String(error) : "";
@@ -572,7 +574,8 @@ function upsertEventFromCalendar(event) {
   updateTicketList();
 }
 
-function handleModalSave({ event, start, end, notes }) {
+function handleModalSave({ event, title, start, end, notes }) {
+  event.setProp("title", title);
   event.setStart(start);
   event.setEnd(end);
   event.setExtendedProp("notes", notes);
@@ -592,6 +595,34 @@ function handleCalendarSelect(info) {
     return;
   }
   addLogForTicket(state.activeTicketId, info);
+}
+
+function handleEventPreview(event, clickX, clickY) {
+  // If preview card is already showing for this event, open editor instead
+  if (previewCard.isVisible() && previewCard.getCurrentEvent()?.id === event.id) {
+    previewCard.hide();
+    openEventEditor(event);
+    return;
+  }
+  
+  // Hide preview card if showing different event
+  if (previewCard.isVisible()) {
+    previewCard.hide();
+  }
+  
+  // Show preview card for this event
+  const ticket = state.tickets.find((item) => item.id === event.extendedProps.ticketId);
+  const ticketTitle = ticket?.title || event.title;
+  previewCard.show(event, ticketTitle, clickX, clickY);
+}
+
+function openEventEditor(event) {
+  const ticket = state.tickets.find((item) => item.id === event.extendedProps.ticketId);
+  modal.open({
+    event,
+    ticketKey: event.extendedProps.ticketKey,
+    ticketTitle: ticket?.title
+  });
 }
 
 function wireNavigation() {
@@ -718,14 +749,8 @@ async function init() {
   calendar = createCalendar({
     events: state.events,
     onSelectRange: handleCalendarSelect,
-    onEventOpen: (event) => {
-      const ticket = state.tickets.find((item) => item.id === event.extendedProps.ticketId);
-      modal.open({
-        event,
-        ticketKey: event.extendedProps.ticketKey,
-        ticketTitle: ticket?.title
-      });
-    },
+    onEventPreview: handleEventPreview,
+    onEventOpen: openEventEditor,
     onEventDrop: (event) => {
       if (!event.end) {
         event.setEnd(addMinutes(event.start, 30));
@@ -783,6 +808,8 @@ async function init() {
     onSave: handleModalSave,
     onDelete: handleModalDelete
   });
+
+  previewCard = createPreviewCard();
 
   wireNavigation();
   wireDrawer();

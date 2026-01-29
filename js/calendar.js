@@ -16,7 +16,7 @@ export function toCalendarEvent(record) {
   };
 }
 
-export function createCalendar({ events, onSelectRange, onEventOpen, onEventDrop, onEventResize }) {
+export function createCalendar({ events, onSelectRange, onEventOpen, onEventPreview, onEventDrop, onEventResize }) {
   const calendarEl = document.getElementById("calendar");
   if (!calendarEl) {
     throw new Error("Calendar element not found");
@@ -30,8 +30,12 @@ export function createCalendar({ events, onSelectRange, onEventOpen, onEventDrop
     headerToolbar: false,
     height: "100%",
     eventClick(info) {
-      if (onEventOpen) {
-        onEventOpen(info.event);
+      // Get click position
+      const clickX = info.jsEvent.clientX;
+      const clickY = info.jsEvent.clientY;
+      
+      if (onEventPreview) {
+        onEventPreview(info.event, clickX, clickY);
       }
     },
     select(info) {
