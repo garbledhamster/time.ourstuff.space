@@ -2,6 +2,7 @@ import { buildCsv, downloadText, parseCsv } from "./csv.js";
 import { createCalendar, toCalendarEvent } from "./calendar.js";
 import { createLogModal } from "./modal.js";
 import { createPreviewCard } from "./preview-card.js";
+import { createEntryPopup } from "./entry-popup.js";
 import {
   loadEvents,
   loadSettings,
@@ -131,6 +132,7 @@ const elements = {
 let calendar = null;
 let modal = null;
 let previewCard = null;
+let entryPopup = null;
 
 function reportError(message, error) {
   const details = error instanceof Error ? error.message : error ? String(error) : "";
@@ -333,6 +335,11 @@ function normalizeEventRecord(record) {
   const start = new Date(record.start);
   const end = new Date(record.end);
   if (isNaN(start.getTime()) || isNaN(end.getTime())) return null;
+  const now = new Date();
+  const createdAtDate = record.createdAt ? new Date(record.createdAt) : now;
+  const updatedAtDate = record.updatedAt ? new Date(record.updatedAt) : createdAtDate;
+  const createdAt = isNaN(createdAtDate.getTime()) ? now.toISOString() : createdAtDate.toISOString();
+  const updatedAt = isNaN(updatedAtDate.getTime()) ? now.toISOString() : updatedAtDate.toISOString();
   return {
     id: record.id || safeUUID(),
     ticketId: record.ticketId,
@@ -340,7 +347,9 @@ function normalizeEventRecord(record) {
     title: record.title || normalizeTitle(record.ticketKey, ""),
     start: start.toISOString(),
     end: end.toISOString(),
-    notes: record.notes || ""
+    notes: record.notes || "",
+    createdAt,
+    updatedAt
   };
 }
 
@@ -450,6 +459,9 @@ function updateTicketList() {
         ticket.note = note;
         syncStorage();
       }
+    },
+    onEntryTimeClick: (event, ticket, clickX, clickY) => {
+      handleEntryTimeClick(event, ticket, clickX, clickY);
     }
   });
 }
@@ -572,6 +584,7 @@ function addLogForTicket(ticketId, range) {
 
   const start = range?.start ? new Date(range.start) : snapToMinutes(new Date(), 15);
   const end = range?.end ? new Date(range.end) : addMinutes(start, 30);
+  const now = new Date().toISOString();
 
   const record = normalizeEventRecord({
     id: safeUUID(),
@@ -580,7 +593,9 @@ function addLogForTicket(ticketId, range) {
     title: normalizeTitle(ticket.key, ticket.title),
     start,
     end,
-    notes: ""
+    notes: "",
+    createdAt: now,
+    updatedAt: now
   });
 
   if (!record) return;
@@ -614,6 +629,8 @@ function deleteTicket(ticketId) {
 }
 
 function upsertEventFromCalendar(event) {
+  const existing = state.events.find((item) => item.id === event.id);
+  const now = new Date().toISOString();
   const updated = normalizeEventRecord({
     id: event.id,
     ticketId: event.extendedProps.ticketId,
@@ -621,7 +638,9 @@ function upsertEventFromCalendar(event) {
     title: event.title,
     start: event.start,
     end: event.end,
-    notes: event.extendedProps.notes
+    notes: event.extendedProps.notes,
+    createdAt: existing?.createdAt,
+    updatedAt: now
   });
   if (!updated) return;
 
@@ -677,6 +696,21 @@ function handleEventPreview(event, clickX, clickY) {
   const ticket = state.tickets.find((item) => item.id === event.extendedProps.ticketId);
   const ticketTitle = ticket?.title || event.title;
   previewCard.show(event, ticketTitle, clickX, clickY);
+}
+
+function handleEntryTimeClick(event, ticket, clickX, clickY) {
+  if (!entryPopup) return;
+  if (entryPopup.isVisible() && entryPopup.getCurrentEventId() === event.id) {
+    entryPopup.hide();
+    return;
+  }
+  if (previewCard?.isVisible()) {
+    previewCard.hide();
+  }
+  if (entryPopup.isVisible()) {
+    entryPopup.hide();
+  }
+  entryPopup.show({ event, ticket, clickX, clickY });
 }
 
 function openEventEditor(event) {
@@ -924,7 +958,12 @@ async function init() {
     onDelete: handleModalDelete
   });
 
-  previewCard = createPreviewCard();
+  previewCard = createPreviewCard({
+    onDelete: (event) => {
+      handleModalDelete({ event });
+    }
+  });
+  entryPopup = createEntryPopup();
 
   wireNavigation();
   wireDrawer();
