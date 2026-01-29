@@ -83,7 +83,8 @@ const state = {
   activeTicketId: null,
   searchTerm: "",
   statusFilters: ["open", "in-progress"],
-  clientFilter: ""
+  clientFilter: "",
+  collapsedTickets: new Set()
 };
 
 const elements = {
@@ -108,7 +109,9 @@ const elements = {
   ticketsPanel: $("ticketsPanel"),
   errorBanner: $("errorBanner"),
   themePresetSelect: $("themePresetSelect"),
-  themeCustomFields: $("themeCustomFields")
+  themeCustomFields: $("themeCustomFields"),
+  expandAllBtn: $("expandAllBtn"),
+  collapseAllBtn: $("collapseAllBtn")
 };
 
 let calendar = null;
@@ -206,6 +209,7 @@ function getThemeSettings(settings = {}) {
 
   return {
     ...resolved,
+    zendeskUrl: resolved.zendeskUrl || "https://zendesk.com/agent/tickets/",
     theme: {
       presetId: presetId || DEFAULT_THEME_ID,
       customColors
@@ -332,7 +336,8 @@ function normalizeTicketRecord(record) {
     key: record.key || "",
     title: record.title || "",
     status: record.status || "open",
-    client: record.client || ""
+    client: record.client || "",
+    note: record.note || ""
   };
 }
 
@@ -382,12 +387,22 @@ function updateTicketList() {
     statusFilters: state.statusFilters,
     clientFilter: state.clientFilter,
     activeTicketId: state.activeTicketId,
+    collapsedTickets: state.collapsedTickets,
+    zendeskUrl: state.settings.zendeskUrl,
     onSelect: (id) => {
       state.activeTicketId = id;
+      state.collapsedTickets.delete(id);
       updateTicketList();
     },
     onAddLog: (id) => addLogForTicket(id),
-    onDelete: (id) => deleteTicket(id)
+    onDelete: (id) => deleteTicket(id),
+    onNoteChange: (id, note) => {
+      const ticket = state.tickets.find((t) => t.id === id);
+      if (ticket) {
+        ticket.note = note;
+        syncStorage();
+      }
+    }
   });
 }
 
@@ -402,7 +417,8 @@ function addTicket() {
     key,
     title,
     status: "open",
-    client
+    client,
+    note: ""
   };
 
   state.tickets = [ticket, ...state.tickets];
@@ -487,7 +503,8 @@ async function importTicketsFromCsv(file) {
         key,
         title: subject,
         status,
-        client: ""
+        client: "",
+        note: ""
       };
       nextTickets.unshift(ticket);
       keyLookup.set(ticket.key, ticket);
@@ -678,6 +695,25 @@ function wireInputs() {
       updateThemeUIVisibility();
       syncCustomColorInputs();
       persistThemeSettings();
+    });
+  }
+
+  if (elements.expandAllBtn) {
+    elements.expandAllBtn.addEventListener("click", () => {
+      state.collapsedTickets.clear();
+      updateTicketList();
+    });
+  }
+
+  if (elements.collapseAllBtn) {
+    elements.collapseAllBtn.addEventListener("click", () => {
+      state.collapsedTickets.clear();
+      for (const ticket of state.tickets) {
+        if (ticket.id !== state.activeTicketId) {
+          state.collapsedTickets.add(ticket.id);
+        }
+      }
+      updateTicketList();
     });
   }
 }

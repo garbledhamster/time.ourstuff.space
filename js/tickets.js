@@ -29,9 +29,12 @@ export function renderTickets({
   statusFilters,
   clientFilter,
   activeTicketId,
+  collapsedTickets,
+  zendeskUrl,
   onSelect,
   onAddLog,
-  onDelete
+  onDelete,
+  onNoteChange
 }) {
   const term = String(searchTerm || "").trim().toLowerCase();
   const clientTerm = String(clientFilter || "").trim().toLowerCase();
@@ -68,6 +71,10 @@ export function renderTickets({
     if (ticket.id === activeTicketId) {
       item.classList.add("active");
     }
+    const isCollapsed = collapsedTickets && collapsedTickets.has(ticket.id);
+    if (isCollapsed) {
+      item.classList.add("collapsed");
+    }
 
     const handle = document.createElement("div");
     handle.className = "dragHandle";
@@ -77,7 +84,21 @@ export function renderTickets({
 
     const key = document.createElement("div");
     key.className = "ticketKey";
-    key.textContent = ticket.key || "Untitled";
+    
+    // Make the key clickable if it looks like a Zendesk ticket number
+    const baseUrl = zendeskUrl || "https://zendesk.com/agent/tickets/";
+    if (ticket.key && /^\d+$/.test(ticket.key)) {
+      const link = document.createElement("a");
+      link.href = `${baseUrl}${ticket.key}`;
+      link.target = "_blank";
+      link.rel = "noopener noreferrer";
+      link.textContent = ticket.key;
+      link.title = "Open in Zendesk";
+      link.addEventListener("click", (e) => e.stopPropagation());
+      key.appendChild(link);
+    } else {
+      key.textContent = ticket.key || "Untitled";
+    }
 
     const title = document.createElement("div");
     title.className = "ticketTitle";
@@ -113,6 +134,34 @@ export function renderTickets({
     actions.append(addBtn, delBtn);
     meta.append(badge, actions);
     body.append(key, title, client, meta);
+
+    // Add note field if ticket is expanded (active and not collapsed)
+    if (ticket.id === activeTicketId && !isCollapsed) {
+      const noteSection = document.createElement("div");
+      noteSection.className = "ticketNote";
+      
+      const noteLabel = document.createElement("label");
+      noteLabel.className = "noteLabel";
+      noteLabel.textContent = "Note";
+      noteLabel.htmlFor = `note-${ticket.id}`;
+      
+      const noteInput = document.createElement("textarea");
+      noteInput.className = "input noteInput";
+      noteInput.id = `note-${ticket.id}`;
+      noteInput.placeholder = "Add a note for this ticket...";
+      noteInput.value = ticket.note || "";
+      noteInput.setAttribute("aria-label", "Ticket note");
+      noteInput.addEventListener("click", (e) => e.stopPropagation());
+      noteInput.addEventListener("input", (e) => {
+        if (onNoteChange) {
+          onNoteChange(ticket.id, e.target.value);
+        }
+      });
+      
+      noteSection.append(noteLabel, noteInput);
+      body.append(noteSection);
+    }
+
     item.append(handle, body);
 
     addBtn.addEventListener("click", (event) => {
