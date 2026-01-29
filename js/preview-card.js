@@ -1,5 +1,3 @@
-import { $ } from "./utils.js";
-
 /**
  * Format duration in hours, minutes, and seconds
  */
@@ -62,9 +60,9 @@ function positionCard(card, clickX, clickY) {
 /**
  * Create and manage the preview card
  */
-export function createPreviewCard() {
+export function createPreviewCard({ onDelete } = {}) {
   let card = null;
-  let currentEventId = null;
+  let currentEvent = null;
   let clickOutsideListenerAdded = false;
   
   function handleClickOutside(e) {
@@ -90,9 +88,14 @@ export function createPreviewCard() {
     card.innerHTML = `
       <div class="previewCard-header">
         <div class="previewCard-title" id="previewCardTitle"></div>
-        <button class="previewCard-close" type="button" aria-label="Close">
-          <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
-        </button>
+        <div class="previewCard-actions">
+          <button class="previewCard-action previewCard-delete" type="button" aria-label="Delete time block">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          </button>
+          <button class="previewCard-action previewCard-close" type="button" aria-label="Close">
+            <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+          </button>
+        </div>
       </div>
       <div class="previewCard-body">
         <div class="previewCard-time">
@@ -100,14 +103,22 @@ export function createPreviewCard() {
           <span class="previewCard-duration"></span>
         </div>
         <div class="previewCard-note"></div>
-        <div class="previewCard-hint">Click again to edit</div>
       </div>
     `;
     
     // Close button handler
-    const closeBtn = card.querySelector('.previewCard-close');
-    closeBtn.addEventListener('click', (e) => {
+    const closeBtn = card.querySelector(".previewCard-close");
+    closeBtn.addEventListener("click", (e) => {
       e.stopPropagation();
+      hide();
+    });
+
+    const deleteBtn = card.querySelector(".previewCard-delete");
+    deleteBtn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      if (onDelete && currentEvent) {
+        onDelete(currentEvent);
+      }
       hide();
     });
     
@@ -127,7 +138,7 @@ export function createPreviewCard() {
   }
   
   function show(event, ticketTitle, clickX, clickY) {
-    currentEventId = event.id;
+    currentEvent = event;
     const cardEl = create();
     
     const start = event.start ? new Date(event.start) : new Date();
@@ -161,7 +172,7 @@ export function createPreviewCard() {
   function hide() {
     if (card) {
       card.classList.remove('visible');
-      currentEventId = null;
+      currentEvent = null;
     }
   }
   
@@ -170,7 +181,7 @@ export function createPreviewCard() {
   }
   
   function getCurrentEventId() {
-    return currentEventId;
+    return currentEvent ? currentEvent.id : null;
   }
   
   return { show, hide, isVisible, getCurrentEventId };

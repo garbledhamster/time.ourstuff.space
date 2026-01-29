@@ -34,7 +34,8 @@ export function renderTickets({
   onSelect,
   onAddLog,
   onDelete,
-  onNoteChange
+  onNoteChange,
+  onEntryTimeClick
 }) {
   const term = String(searchTerm || "").trim().toLowerCase();
   const clientTerm = String(clientFilter || "").trim().toLowerCase();
@@ -164,9 +165,16 @@ export function renderTickets({
           
           const duration = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
           
-          const entryTime = document.createElement("div");
+          const entryTime = document.createElement("button");
           entryTime.className = "entryTime";
+          entryTime.type = "button";
           entryTime.textContent = `${start.toLocaleString()} - ${end.toLocaleTimeString()} (${formatMinutes(duration)})`;
+          entryTime.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if (onEntryTimeClick) {
+              onEntryTimeClick(event, ticket, e.clientX, e.clientY);
+            }
+          });
           
           entry.appendChild(entryTime);
           

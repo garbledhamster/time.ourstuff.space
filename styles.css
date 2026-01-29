@@ -356,6 +356,16 @@ textarea.input{
   font-size: 11px;
   color: var(--text-color);
   font-weight: 500;
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+  width: 100%;
+}
+.entryTime:hover,
+.entryTime:focus-visible{
+  color: var(--primary-color);
 }
 .entryNotes{
   margin-top: 4px;
@@ -660,7 +670,13 @@ textarea.input{
   white-space: nowrap;
 }
 
-.previewCard-close {
+.previewCard-actions {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.previewCard-action {
   border: none;
   background: transparent;
   color: var(--text-muted-color);
@@ -673,9 +689,14 @@ textarea.input{
   transition: all 0.15s ease;
 }
 
-.previewCard-close:hover {
+.previewCard-action:hover,
+.previewCard-action:focus-visible {
   background: color-mix(in srgb, var(--text-color) 10%, transparent);
   color: var(--text-color);
+}
+
+.previewCard-delete {
+  color: var(--danger-color);
 }
 
 .previewCard-body {
@@ -718,12 +739,27 @@ textarea.input{
   word-break: break-word;
 }
 
-.previewCard-hint {
+.previewCard-details {
+  display: grid;
+  gap: 6px;
+}
+
+.previewCard-detailRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   font-size: 11px;
   color: var(--text-muted-color);
-  text-align: center;
-  padding: 8px;
-  border-radius: 8px;
-  background: color-mix(in srgb, var(--primary-color) 10%, transparent);
-  border: 1px solid color-mix(in srgb, var(--primary-color) 25%, transparent);
+}
+
+.previewCard-detailLabel {
+  font-weight: 600;
+  color: var(--text-muted-color);
+}
+
+.previewCard-detailValue {
+  color: var(--text-color);
+  text-align: right;
+  font-variant-numeric: tabular-nums;
 }
