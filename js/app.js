@@ -689,7 +689,7 @@ async function init() {
     throw new Error("FullCalendar failed to load.");
   }
 
-  const [tickets, events] = await Promise.all([loadTickets(), loadEvents()]);
+  const [tickets, events, settings] = await Promise.all([loadTickets(), loadEvents(), loadSettings()]);
   let didNormalizeTickets = false;
   state.tickets = tickets
     .map((ticket) => {
