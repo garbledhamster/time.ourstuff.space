@@ -30,6 +30,7 @@ export function renderTickets({
   clientFilter,
   activeTicketId,
   collapsedTickets,
+  zendeskUrl,
   onSelect,
   onAddLog,
   onDelete,
@@ -85,9 +86,10 @@ export function renderTickets({
     key.className = "ticketKey";
     
     // Make the key clickable if it looks like a Zendesk ticket number
+    const baseUrl = zendeskUrl || "https://zendesk.com/agent/tickets/";
     if (ticket.key && /^\d+$/.test(ticket.key)) {
       const link = document.createElement("a");
-      link.href = `https://zendesk.com/agent/tickets/${ticket.key}`;
+      link.href = `${baseUrl}${ticket.key}`;
       link.target = "_blank";
       link.rel = "noopener noreferrer";
       link.textContent = ticket.key;
@@ -138,14 +140,17 @@ export function renderTickets({
       const noteSection = document.createElement("div");
       noteSection.className = "ticketNote";
       
-      const noteLabel = document.createElement("div");
+      const noteLabel = document.createElement("label");
       noteLabel.className = "noteLabel";
       noteLabel.textContent = "Note";
+      noteLabel.htmlFor = `note-${ticket.id}`;
       
       const noteInput = document.createElement("textarea");
       noteInput.className = "input noteInput";
+      noteInput.id = `note-${ticket.id}`;
       noteInput.placeholder = "Add a note for this ticket...";
       noteInput.value = ticket.note || "";
+      noteInput.setAttribute("aria-label", "Ticket note");
       noteInput.addEventListener("click", (e) => e.stopPropagation());
       noteInput.addEventListener("input", (e) => {
         if (onNoteChange) {

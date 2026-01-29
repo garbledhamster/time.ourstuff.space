@@ -209,6 +209,7 @@ function getThemeSettings(settings = {}) {
 
   return {
     ...resolved,
+    zendeskUrl: resolved.zendeskUrl || "https://zendesk.com/agent/tickets/",
     theme: {
       presetId: presetId || DEFAULT_THEME_ID,
       customColors
@@ -387,8 +388,10 @@ function updateTicketList() {
     clientFilter: state.clientFilter,
     activeTicketId: state.activeTicketId,
     collapsedTickets: state.collapsedTickets,
+    zendeskUrl: state.settings.zendeskUrl,
     onSelect: (id) => {
       state.activeTicketId = id;
+      state.collapsedTickets.delete(id);
       updateTicketList();
     },
     onAddLog: (id) => addLogForTicket(id),

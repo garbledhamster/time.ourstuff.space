@@ -207,7 +207,7 @@ textarea.input{
   margin-top: 10px;
 }
 
-.themeSection .input{
+.themeSection > .input{
   background: var(--primary-color);
   color: var(--text-color);
   border-color: color-mix(in srgb, var(--primary-color) 60%, transparent);
