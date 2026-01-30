@@ -85,6 +85,34 @@
             </div>
           </div>
 
+          <div class="fieldRow" id="clientFilters">
+            <select class="input" id="clientFilterSelect" aria-label="Filter by client"></select>
+          </div>
+
+          <div class="fieldRow">
+            <input class="input" id="ticketSearchInput" placeholder="Search tickets..." />
+          </div>
+
+          <div class="fieldRow" id="statusFilters" style="gap:12px; flex-wrap:wrap;">
+            <span class="smallMuted">Status:</span>
+            <label class="smallMuted">
+              <input type="checkbox" name="ticketStatusFilter" value="open" checked />
+              Open
+            </label>
+            <label class="smallMuted">
+              <input type="checkbox" name="ticketStatusFilter" value="in-progress" checked />
+              In-Progress
+            </label>
+            <label class="smallMuted">
+              <input type="checkbox" name="ticketStatusFilter" value="closed" />
+              Closed
+            </label>
+          </div>
+        </div>
+
+        <div class="ticketList" id="ticketList"></div>
+
+        <div class="ticketsFooter">
           <div class="fieldRow">
             <input class="input" id="ticketKeyInput" placeholder="Ticket ID or URL (e.g. 12345 or Zendesk link)" />
           </div>
@@ -111,37 +139,6 @@
             <input class="hiddenInput" id="importInput" type="file" accept=".csv,text/csv" />
           </div>
 
-          <div class="fieldRow" id="statusFilters" style="gap:12px; flex-wrap:wrap;">
-            <span class="smallMuted">Status:</span>
-            <label class="smallMuted">
-              <input type="checkbox" name="ticketStatusFilter" value="open" checked />
-              Open
-            </label>
-            <label class="smallMuted">
-              <input type="checkbox" name="ticketStatusFilter" value="in-progress" checked />
-              In-Progress
-            </label>
-            <label class="smallMuted">
-              <input type="checkbox" name="ticketStatusFilter" value="closed" />
-              Closed
-            </label>
-          </div>
-
-          <div class="fieldRow" id="clientFilters" style="gap:12px; flex-wrap:wrap;">
-            <span class="smallMuted">Client:</span>
-            <select class="input" id="clientFilterSelect" aria-label="Filter by client"></select>
-          </div>
-
-          <div class="fieldRow" style="margin-bottom:0;">
-            <input class="input" id="ticketSearchInput" placeholder="Search tickets..." />
-          </div>
-
-          <div class="themeSection">
-            <div class="label">Theme</div>
-            <select class="input" id="themePresetSelect"></select>
-            <div class="themeCustom" id="themeCustomFields"></div>
-          </div>
-
           <div class="fieldRow" style="gap:8px;">
             <button class="btn" id="expandAllBtn" title="Expand all tickets" aria-label="Expand all tickets to show full details">
               <svg class="btn-icon" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
@@ -153,8 +150,6 @@
             </button>
           </div>
         </div>
-
-        <div class="ticketList" id="ticketList"></div>
       </aside>
 
       <!-- Calendar area -->
