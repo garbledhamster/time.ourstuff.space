@@ -300,7 +300,12 @@ export function formatDurationByFormat(totalSeconds, format) {
     case 'decimal': {
       // Format: 1.5h
       const hours = totalSeconds / 3600;
-      return hours >= 0.01 ? `${hours.toFixed(2)}h` : '0h';
+      if (hours >= 0.01) {
+        // Remove trailing zeros and unnecessary decimal point
+        const formatted = hours.toFixed(2).replace(/\.?0+$/, '');
+        return `${formatted}h`;
+      }
+      return '0h';
     }
     
     case 'minutes': {

@@ -53,7 +53,6 @@ export function createEntryPopup() {
   let card = null;
   let currentEventId = null;
   let currentEvent = null;
-  let currentTicket = null;
   let clickOutsideListenerAdded = false;
 
   function handleClickOutside(e) {
@@ -145,8 +144,8 @@ export function createEntryPopup() {
       cycleTimeFormat();
       // Re-show with the same event to update the display
       if (currentEvent) {
-        const start = currentEvent?.start ? new Date(currentEvent.start) : new Date();
-        const end = currentEvent?.end ? new Date(currentEvent.end) : new Date();
+        const start = currentEvent.start ? new Date(currentEvent.start) : new Date();
+        const end = currentEvent.end ? new Date(currentEvent.end) : new Date();
         const durationParts = formatDurationParts(start, end);
         const durationLabel = formatDurationLabel(durationParts.totalSeconds);
         durationEl.textContent = durationLabel;
@@ -185,7 +184,6 @@ export function createEntryPopup() {
   function show({ event, ticket, clickX, clickY }) {
     currentEventId = event?.id || null;
     currentEvent = event;
-    currentTicket = ticket;
     const cardEl = create();
 
     const start = event?.start ? new Date(event.start) : new Date();
@@ -232,7 +230,6 @@ export function createEntryPopup() {
       card.classList.remove("visible");
       currentEventId = null;
       currentEvent = null;
-      currentTicket = null;
     }
   }
 
