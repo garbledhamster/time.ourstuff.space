@@ -30,11 +30,14 @@ export function renderTickets({
   statusFilters,
   clientFilter,
   activeTicketId,
+  editingTicketId,
   collapsedTickets,
   zendeskUrl,
   onSelect,
   onAddLog,
   onEdit,
+  onSaveEdit,
+  onCancelEdit,
   onDelete,
   onColorChange,
   onNoteChange,
@@ -70,14 +73,18 @@ export function renderTickets({
   countEl.textContent = String(tickets.length);
 
   for (const ticket of filtered) {
+    const isEditing = ticket.id === editingTicketId;
     const item = document.createElement("div");
     item.className = "ticketItem";
     item.dataset.ticketId = ticket.id;
     if (ticket.id === activeTicketId) {
       item.classList.add("active");
     }
+    if (isEditing) {
+      item.classList.add("editing");
+    }
     const isCollapsed = collapsedTickets && collapsedTickets.has(ticket.id);
-    if (isCollapsed) {
+    if (isCollapsed && !isEditing) {
       item.classList.add("collapsed");
     }
 
@@ -87,6 +94,98 @@ export function renderTickets({
     const body = document.createElement("div");
     body.className = "ticketBody";
 
+    // If editing, show edit fields
+    if (isEditing) {
+      const editFields = document.createElement("div");
+      editFields.className = "ticketEditFields";
+
+      const keyInput = document.createElement("input");
+      keyInput.className = "input ticketEditField";
+      keyInput.type = "text";
+      keyInput.placeholder = "Ticket ID or URL";
+      keyInput.value = ticket.key || "";
+      keyInput.addEventListener("click", (e) => e.stopPropagation());
+
+      const titleInput = document.createElement("input");
+      titleInput.className = "input ticketEditField";
+      titleInput.type = "text";
+      titleInput.placeholder = "Title";
+      titleInput.value = ticket.title || "";
+      titleInput.addEventListener("click", (e) => e.stopPropagation());
+
+      const clientInput = document.createElement("input");
+      clientInput.className = "input ticketEditField";
+      clientInput.type = "text";
+      clientInput.placeholder = "Client";
+      clientInput.value = ticket.client || "";
+      clientInput.addEventListener("click", (e) => e.stopPropagation());
+
+      editFields.append(keyInput, titleInput, clientInput);
+      body.append(editFields);
+
+      // Helper function to get save data including note from DOM
+      const getSaveData = () => {
+        const noteEl = document.getElementById(`note-${ticket.id}`);
+        return {
+          key: keyInput.value,
+          title: titleInput.value,
+          client: clientInput.value,
+          note: noteEl ? noteEl.value : ticket.note
+        };
+      };
+
+      // Edit actions
+      const editActions = document.createElement("div");
+      editActions.className = "ticketEditActions";
+
+      const saveBtn = document.createElement("button");
+      saveBtn.className = "btn primary";
+      saveBtn.type = "button";
+      saveBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Save';
+      saveBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (onSaveEdit) {
+          onSaveEdit(ticket.id, getSaveData());
+        }
+      });
+
+      const cancelBtn = document.createElement("button");
+      cancelBtn.className = "btn";
+      cancelBtn.type = "button";
+      cancelBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg> Cancel';
+      cancelBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        if (onCancelEdit) {
+          onCancelEdit();
+        }
+      });
+
+      editActions.append(cancelBtn, saveBtn);
+      body.append(editActions);
+
+      // Handle keyboard shortcuts
+      [keyInput, titleInput, clientInput].forEach(input => {
+        input.addEventListener("keydown", (e) => {
+          if (e.key === "Enter") {
+            e.preventDefault();
+            if (onSaveEdit) {
+              onSaveEdit(ticket.id, getSaveData());
+            }
+          }
+          if (e.key === "Escape") {
+            e.preventDefault();
+            if (onCancelEdit) {
+              onCancelEdit();
+            }
+          }
+        });
+      });
+
+      // Focus the key input after render
+      setTimeout(() => keyInput.focus(), 0);
+    }
+
+    // Always show ticket key/title/client (hidden via CSS when editing)
     const key = document.createElement("div");
     key.className = "ticketKey";
     
@@ -162,7 +261,11 @@ export function renderTickets({
 
     actions.append(addBtn, editBtn, colorBtn, delBtn);
     meta.append(badge, actions);
-    body.append(key, title, client, meta);
+    
+    if (!isEditing) {
+      body.append(key, title, client);
+    }
+    body.append(meta);
 
     // Add note field and time entries if ticket is expanded (active and not collapsed)
     if (ticket.id === activeTicketId && !isCollapsed) {
@@ -182,16 +285,20 @@ export function renderTickets({
         for (const event of ticketEvents) {
           const entry = document.createElement("div");
           entry.className = "entryItem";
-          
+
           const start = new Date(event.start);
           const end = new Date(event.end);
-          
+
           // Validate dates
           if (isNaN(start.getTime()) || isNaN(end.getTime())) {
             continue; // Skip invalid entries
           }
-          
+
           const duration = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
+
+          // Scale the entry height based on duration (0.8px per minute, min 40px)
+          const minHeight = Math.max(40, duration * 0.8);
+          entry.style.minHeight = `${minHeight}px`;
           
           const entryTime = document.createElement("button");
           entryTime.className = "entryTime";
@@ -222,6 +329,10 @@ export function renderTickets({
       
       const noteSection = document.createElement("div");
       noteSection.className = "ticketNote";
+      // Make note read-only when not in edit mode
+      if (!isEditing) {
+        noteSection.classList.add("readOnly");
+      }
       
       const noteLabel = document.createElement("label");
       noteLabel.className = "noteLabel";
@@ -231,15 +342,13 @@ export function renderTickets({
       const noteInput = document.createElement("textarea");
       noteInput.className = "input noteInput";
       noteInput.id = `note-${ticket.id}`;
-      noteInput.placeholder = "Add a note for this ticket...";
+      noteInput.placeholder = isEditing ? "Add a note for this ticket..." : "Click edit to add a note...";
       noteInput.value = ticket.note || "";
       noteInput.setAttribute("aria-label", "Ticket note");
+      noteInput.readOnly = !isEditing;
       noteInput.addEventListener("click", (e) => e.stopPropagation());
-      noteInput.addEventListener("input", (e) => {
-        if (onNoteChange) {
-          onNoteChange(ticket.id, e.target.value);
-        }
-      });
+      // Note: The note value is saved when the user clicks Save, not on input
+      // This ensures note changes are discarded if the user cancels editing
       
       noteSection.append(noteLabel, noteInput);
       body.append(noteSection);
