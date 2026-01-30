@@ -813,6 +813,8 @@ function changeTicketColor(ticketId) {
         // Remove and re-add the event with new color
         calendarEvent.remove();
         calendar.addEvent(toCalendarEvent(eventData, color));
+      } else {
+        console.warn(`Calendar event not found for ID: ${eventData.id}`);
       }
     });
     

@@ -17,6 +17,9 @@ let currentTicketId = null;
 let onColorSelected = null;
 
 export function showColorPicker(ticketId, currentColor, callback) {
+  // Close any existing color picker first
+  closeColorPicker();
+  
   currentTicketId = ticketId;
   onColorSelected = callback;
 
@@ -107,21 +110,23 @@ export function showColorPicker(ticketId, currentColor, callback) {
   overlay.appendChild(modal);
   document.body.appendChild(overlay);
 
+  // Store the handleEscape function so we can remove it later
+  const handleEscape = (e) => {
+    if (e.key === "Escape") {
+      closeColorPicker();
+    }
+  };
+
+  // Store the listener on the overlay element for cleanup
+  overlay._escapeHandler = handleEscape;
+  document.addEventListener("keydown", handleEscape);
+
   // Close on overlay click
   overlay.addEventListener("click", (e) => {
     if (e.target === overlay) {
       closeColorPicker();
     }
   });
-
-  // Close on Escape key
-  const handleEscape = (e) => {
-    if (e.key === "Escape") {
-      closeColorPicker();
-      document.removeEventListener("keydown", handleEscape);
-    }
-  };
-  document.addEventListener("keydown", handleEscape);
 }
 
 function selectColor(color) {
@@ -134,6 +139,10 @@ function selectColor(color) {
 function closeColorPicker() {
   const overlay = document.getElementById("colorPickerModal");
   if (overlay) {
+    // Remove the escape key handler
+    if (overlay._escapeHandler) {
+      document.removeEventListener("keydown", overlay._escapeHandler);
+    }
     overlay.remove();
   }
   currentTicketId = null;
