@@ -26,9 +26,8 @@
         Tickets
       </button>
 
-      <button class="btn" id="openSettingsBtn" title="Open settings">
+      <button class="btn btn-icon-only" id="openSettingsBtn" title="Open settings">
         <svg class="btn-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M3.22 3.22l4.25 4.25M16.53 16.53l4.25 4.25M1 12h6M17 12h6M3.22 20.78l4.25-4.25M16.53 7.47l4.25-4.25"/></svg>
-        Settings
       </button>
 
       <div class="spacer"></div>
@@ -37,9 +36,8 @@
         <button class="btn btn-icon-only" id="prevBtn" title="Previous">
           <svg class="btn-icon" viewBox="0 0 24 24"><path d="m15 18-6-6 6-6"/></svg>
         </button>
-        <button class="btn" id="todayBtn" title="Today">
+        <button class="btn btn-icon-only" id="todayBtn" title="Today">
           <svg class="btn-icon" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/></svg>
-          Today
         </button>
         <button class="btn btn-icon-only" id="nextBtn" title="Next">
           <svg class="btn-icon" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6"/></svg>
@@ -47,21 +45,17 @@
 
         <span class="divider"></span>
 
-        <button class="btn" data-view="timeGridDay">
+        <button class="btn btn-icon-only" data-view="timeGridDay">
           <svg class="btn-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2"/><path d="M12 20v2"/><path d="m4.93 4.93 1.41 1.41"/><path d="m17.66 17.66 1.41 1.41"/><path d="M2 12h2"/><path d="M20 12h2"/><path d="m6.34 17.66-1.41 1.41"/><path d="m19.07 4.93-1.41 1.41"/></svg>
-          Day
         </button>
-        <button class="btn" data-view="timeGridWeek">
+        <button class="btn btn-icon-only" data-view="timeGridWeek">
           <svg class="btn-icon" viewBox="0 0 24 24"><path d="M8 2v4"/><path d="M16 2v4"/><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M3 10h18"/><path d="M8 14h.01"/><path d="M12 14h.01"/><path d="M16 14h.01"/><path d="M8 18h.01"/><path d="M12 18h.01"/><path d="M16 18h.01"/></svg>
-          Week
         </button>
-        <button class="btn" data-view="dayGridMonth">
+        <button class="btn btn-icon-only" data-view="dayGridMonth">
           <svg class="btn-icon" viewBox="0 0 24 24"><rect width="18" height="18" x="3" y="4" rx="2"/><path d="M16 2v4"/><path d="M3 10h18"/><path d="M8 2v4"/><path d="M17 14h-6"/><path d="M13 18H7"/><path d="M7 14h.01"/><path d="M17 18h.01"/></svg>
-          Month
         </button>
-        <button class="btn" data-view="listWeek">
+        <button class="btn btn-icon-only" data-view="listWeek">
           <svg class="btn-icon" viewBox="0 0 24 24"><path d="M3 5h.01"/><path d="M3 12h.01"/><path d="M3 19h.01"/><path d="M8 5h13"/><path d="M8 12h13"/><path d="M8 19h13"/></svg>
-          List
         </button>
       </div>
     </header>
@@ -172,6 +166,21 @@
     </div>
 
     <div class="settingsBody">
+      <!-- General Settings Section -->
+      <div class="settingsSection">
+        <h3 class="settingsSectionTitle">General</h3>
+        <div class="settingsContent">
+          <div class="fieldRow">
+            <label for="settingsDefaultBlockTime" class="label">Default Block Time (minutes)</label>
+            <input class="input" id="settingsDefaultBlockTime" type="number" min="1" max="480" step="15" placeholder="30" aria-label="Default block time in minutes" />
+          </div>
+          <div class="fieldRow">
+            <label for="settingsZendeskUrl" class="label">Zendesk URL</label>
+            <input class="input" id="settingsZendeskUrl" type="text" placeholder="https://zendesk.com/agent/tickets/" aria-label="Zendesk base URL" />
+          </div>
+        </div>
+      </div>
+
       <!-- Theme Settings Section -->
       <div class="settingsSection">
         <h3 class="settingsSectionTitle">Theme</h3>

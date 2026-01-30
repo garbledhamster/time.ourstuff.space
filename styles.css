@@ -148,9 +148,29 @@ body{
   border-color: color-mix(in srgb, var(--primary-color) 60%, transparent);
   box-shadow: 0 0 0 4px color-mix(in srgb, var(--primary-color) 18%, transparent);
 }
+
+/* Select dropdown styling */
+select.input {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
+select.input option {
+  background-color: var(--surface-color);
+  color: var(--text-color);
+}
+
 textarea.input{
   min-height: 120px;
   resize: vertical;
+}
+select.input{
+  background: var(--surface-color);
+  color: var(--text-color);
+}
+select.input option{
+  background: var(--surface-color);
+  color: var(--text-color);
 }
 .hiddenInput{
   display:none;
@@ -288,6 +308,10 @@ textarea.input{
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 30%, transparent), 0 10px 22px rgba(0,0,0,.18);
 }
 .ticketItem:active{ cursor:grabbing; }
+.ticketItem.dragging{
+  opacity: 0.5;
+  cursor: grabbing;
+}
 .dragHandle{
   width: 12px;
   height: 28px;
@@ -702,6 +726,11 @@ body.settings-open{
 .fc .fc-event-title{ font-weight: 900; }
 .fc .fc-event-time{ font-weight: 800; opacity:.9; }
 .fc .fc-daygrid-event{ padding: 2px 4px !important; }
+.fc .ghost-event{
+  opacity: 0.6 !important;
+  border-style: dashed !important;
+  border-width: 2px !important;
+}
 
 /* Selected event highlight */
 .fc .fc-event-selected,
@@ -924,4 +953,36 @@ body.settings-open{
   color: var(--text-color);
   text-align: right;
   font-variant-numeric: tabular-nums;
+}
+
+/* Tooltip Bubble */
+.tooltip {
+  position: fixed;
+  z-index: 9999;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-color);
+  background: var(--surface-color);
+  color: var(--text-color);
+  font-size: 12px;
+  font-weight: 600;
+  white-space: nowrap;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-4px);
+  transition: opacity 0.2s ease, visibility 0.2s ease, transform 0.2s ease;
+  pointer-events: none;
+}
+
+.tooltip.visible {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+/* Button with tooltip support */
+.btn[data-tooltip],
+.iconBtn[data-tooltip] {
+  position: relative;
 }

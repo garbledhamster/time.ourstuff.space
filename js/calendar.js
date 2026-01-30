@@ -32,7 +32,7 @@ export function toCalendarEvent(record) {
   };
 }
 
-export function createCalendar({ events, onSelectRange, onEventOpen, onEventPreview, onEventDrop, onEventResize }) {
+export function createCalendar({ events, onSelectRange, onEventOpen, onEventPreview, onEventDrop, onEventResize, onTicketDrop, defaultBlockTimeMinutes }) {
   const calendarEl = document.getElementById("calendar");
   if (!calendarEl) {
     throw new Error("Calendar element not found");
@@ -45,6 +45,7 @@ export function createCalendar({ events, onSelectRange, onEventOpen, onEventPrev
     nowIndicator: true,
     selectable: true,
     editable: true,
+    droppable: true,
     headerToolbar: false,
     height: "100%",
     eventClick(info) {
@@ -99,24 +100,10 @@ export function createCalendar({ events, onSelectRange, onEventOpen, onEventPrev
           onEventOpen(info.event);
         }
       });
-      
-      // Add resize handle elements for better visibility and touch targets
-      // Check if handles already exist to avoid duplicates
-      if (!info.el.querySelector('.custom-resize-handle')) {
-        const handles = createResizeHandles();
-        info.el.appendChild(handles.top);
-        info.el.appendChild(handles.bottom);
-      }
-      
-      // Restore selected state if this event was selected
-      if (selectedEventId === info.event.id) {
-        info.el.classList.add('fc-event-selected');
-      }
     },
-    eventWillUnmount(info) {
-      // Clear selection if the selected event is being removed
-      if (selectedEventId === info.event.id) {
-        selectedEventId = null;
+    drop(info) {
+      if (onTicketDrop) {
+        onTicketDrop(info);
       }
     }
   });
