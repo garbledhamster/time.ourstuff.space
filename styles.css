@@ -397,6 +397,10 @@ textarea.input{
   justify-content:space-between;
   gap:8px;
 }
+.ticketMeta > div{
+  display: flex;
+  gap: 6px;
+}
 .badge{
   font-size: 11px;
   padding: 4px 8px;
