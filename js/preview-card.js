@@ -1,5 +1,7 @@
+import { getTimeFormat, cycleTimeFormat, formatDurationByFormat } from './utils.js';
+
 /**
- * Format duration in hours, minutes, and seconds
+ * Format duration based on current format preference
  */
 function formatDuration(startDate, endDate) {
   const diffMs = endDate.getTime() - startDate.getTime();
@@ -10,17 +12,9 @@ function formatDuration(startDate, endDate) {
   }
   
   const totalSeconds = Math.floor(diffMs / 1000);
+  const format = getTimeFormat();
   
-  const hours = Math.floor(totalSeconds / 3600);
-  const minutes = Math.floor((totalSeconds % 3600) / 60);
-  const seconds = totalSeconds % 60;
-  
-  const parts = [];
-  if (hours > 0) parts.push(`${hours}h`);
-  if (minutes > 0) parts.push(`${minutes}m`);
-  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
-  
-  return parts.join(' ');
+  return formatDurationByFormat(totalSeconds, format);
 }
 
 /**
@@ -100,7 +94,7 @@ export function createPreviewCard({ onDelete } = {}) {
       <div class="previewCard-body">
         <div class="previewCard-time">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          <span class="previewCard-duration"></span>
+          <span class="previewCard-duration clickable" title="Click to cycle time format"></span>
         </div>
         <div class="previewCard-note"></div>
       </div>
@@ -120,6 +114,20 @@ export function createPreviewCard({ onDelete } = {}) {
         onDelete(currentEvent);
       }
       hide();
+    });
+    
+    // Duration click handler to cycle format
+    const durationEl = card.querySelector('.previewCard-duration');
+    durationEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cycleTimeFormat();
+      // Re-show with the same event to update the display
+      if (currentEvent) {
+        const start = currentEvent.start ? new Date(currentEvent.start) : new Date();
+        const end = currentEvent.end ? new Date(currentEvent.end) : new Date();
+        const duration = formatDuration(start, end);
+        durationEl.textContent = duration;
+      }
     });
     
     document.body.appendChild(card);

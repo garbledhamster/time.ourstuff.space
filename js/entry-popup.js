@@ -1,3 +1,5 @@
+import { getTimeFormat, cycleTimeFormat, formatDurationByFormat } from './utils.js';
+
 /**
  * Format duration in hours, minutes, and seconds.
  */
@@ -15,12 +17,9 @@ function formatDurationParts(startDate, endDate) {
   return { hours, minutes, seconds, totalSeconds };
 }
 
-function formatDurationLabel({ hours, minutes, seconds }) {
-  const parts = [];
-  if (hours > 0) parts.push(`${hours}h`);
-  if (minutes > 0) parts.push(`${minutes}m`);
-  if (seconds > 0 || parts.length === 0) parts.push(`${seconds}s`);
-  return parts.join(" ");
+function formatDurationLabel(totalSeconds) {
+  const format = getTimeFormat();
+  return formatDurationByFormat(totalSeconds, format);
 }
 
 /**
@@ -53,6 +52,7 @@ function positionCard(card, clickX, clickY) {
 export function createEntryPopup() {
   let card = null;
   let currentEventId = null;
+  let currentEvent = null;
   let clickOutsideListenerAdded = false;
 
   function handleClickOutside(e) {
@@ -87,7 +87,7 @@ export function createEntryPopup() {
       <div class="previewCard-body">
         <div class="previewCard-time">
           <svg class="btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
-          <span class="previewCard-duration"></span>
+          <span class="previewCard-duration clickable" title="Click to cycle time format"></span>
         </div>
         <div class="previewCard-details">
           <div class="previewCard-detailRow" data-row="start">
@@ -137,6 +137,21 @@ export function createEntryPopup() {
       hide();
     });
 
+    // Duration click handler to cycle format
+    const durationEl = card.querySelector('.previewCard-duration');
+    durationEl.addEventListener('click', (e) => {
+      e.stopPropagation();
+      cycleTimeFormat();
+      // Re-show with the same event to update the display
+      if (currentEvent) {
+        const start = currentEvent.start ? new Date(currentEvent.start) : new Date();
+        const end = currentEvent.end ? new Date(currentEvent.end) : new Date();
+        const durationParts = formatDurationParts(start, end);
+        const durationLabel = formatDurationLabel(durationParts.totalSeconds);
+        durationEl.textContent = durationLabel;
+      }
+    });
+
     document.body.appendChild(card);
 
     if (!clickOutsideListenerAdded) {
@@ -168,12 +183,13 @@ export function createEntryPopup() {
 
   function show({ event, ticket, clickX, clickY }) {
     currentEventId = event?.id || null;
+    currentEvent = event;
     const cardEl = create();
 
     const start = event?.start ? new Date(event.start) : new Date();
     const end = event?.end ? new Date(event.end) : new Date();
     const durationParts = formatDurationParts(start, end);
-    const durationLabel = formatDurationLabel(durationParts);
+    const durationLabel = formatDurationLabel(durationParts.totalSeconds);
 
     const title = ticket?.title || event?.title || ticket?.key || "Time Entry";
     cardEl.querySelector(".previewCard-title").textContent = title;
@@ -213,6 +229,7 @@ export function createEntryPopup() {
     if (card) {
       card.classList.remove("visible");
       currentEventId = null;
+      currentEvent = null;
     }
   }
 

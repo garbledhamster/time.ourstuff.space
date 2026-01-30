@@ -235,3 +235,91 @@ export function snapToEventBoundaries(start, end, otherEvents, options = {}) {
     snapped
   };
 }
+
+/**
+ * Time format types for duration display
+ */
+const TIME_FORMATS = ['hm', 'decimal', 'minutes', 'seconds'];
+const TIME_FORMAT_KEY = 'timeDisplayFormat';
+
+/**
+ * Get current time format preference from localStorage
+ */
+export function getTimeFormat() {
+  const stored = localStorage.getItem(TIME_FORMAT_KEY);
+  return TIME_FORMATS.includes(stored) ? stored : 'hm';
+}
+
+/**
+ * Set time format preference in localStorage
+ */
+export function setTimeFormat(format) {
+  if (TIME_FORMATS.includes(format)) {
+    localStorage.setItem(TIME_FORMAT_KEY, format);
+  }
+}
+
+/**
+ * Cycle to the next time format
+ */
+export function cycleTimeFormat() {
+  const current = getTimeFormat();
+  const currentIndex = TIME_FORMATS.indexOf(current);
+  const nextIndex = (currentIndex + 1) % TIME_FORMATS.length;
+  const nextFormat = TIME_FORMATS[nextIndex];
+  setTimeFormat(nextFormat);
+  return nextFormat;
+}
+
+/**
+ * Format duration in total seconds based on selected format
+ * @param {number} totalSeconds - Duration in seconds
+ * @param {string} format - Format type: 'hm', 'decimal', 'minutes', 'seconds'
+ * @returns {string} Formatted duration string
+ */
+export function formatDurationByFormat(totalSeconds, format) {
+  if (totalSeconds < 0 || isNaN(totalSeconds)) {
+    return '0s';
+  }
+
+  switch (format) {
+    case 'hm': {
+      // Format: 1h 30m (omit seconds)
+      const hours = Math.floor(totalSeconds / 3600);
+      const minutes = Math.floor((totalSeconds % 3600) / 60);
+      const seconds = totalSeconds % 60;
+      
+      const parts = [];
+      if (hours > 0) parts.push(`${hours}h`);
+      if (minutes > 0) parts.push(`${minutes}m`);
+      if (seconds > 0 && parts.length === 0) parts.push(`${seconds}s`);
+      
+      return parts.length > 0 ? parts.join(' ') : '0s';
+    }
+    
+    case 'decimal': {
+      // Format: 1.5h
+      const hours = totalSeconds / 3600;
+      if (hours >= 0.01) {
+        // Remove trailing zeros and unnecessary decimal point
+        const formatted = hours.toFixed(2).replace(/\.?0+$/, '');
+        return `${formatted}h`;
+      }
+      return '0h';
+    }
+    
+    case 'minutes': {
+      // Format: 90m
+      const minutes = Math.floor(totalSeconds / 60);
+      return `${minutes}m`;
+    }
+    
+    case 'seconds': {
+      // Format: 5400s
+      return `${totalSeconds}s`;
+    }
+    
+    default:
+      return formatDurationByFormat(totalSeconds, 'hm');
+  }
+}

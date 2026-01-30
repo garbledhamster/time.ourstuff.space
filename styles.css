@@ -829,6 +829,18 @@ body.settings-open{
   font-variant-numeric: tabular-nums;
 }
 
+.previewCard-duration.clickable {
+  cursor: pointer;
+  border-bottom: 1px dashed var(--primary-color);
+  user-select: none;
+  transition: all 0.15s ease;
+}
+
+.previewCard-duration.clickable:hover {
+  color: var(--primary-color);
+  border-bottom-style: solid;
+}
+
 .previewCard-note {
   font-size: 13px;
   line-height: 1.5;
