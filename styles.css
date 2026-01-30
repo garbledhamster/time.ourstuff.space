@@ -714,7 +714,7 @@ body.settings-open{
 }
 
 /* Resize handles - visible circles on top and bottom of event */
-.fc .fc-event .fc-event-resizer {
+.fc .fc-event .custom-resize-handle {
   position: absolute;
   width: 12px;
   height: 12px;
@@ -726,26 +726,25 @@ body.settings-open{
   z-index: 5;
   opacity: 0.85;
   transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none; /* Decorative only, FullCalendar handles resize */
 }
 
-.fc .fc-event .fc-event-resizer-start {
+.fc .fc-event .custom-resize-handle-top {
   top: -6px;
-  cursor: ns-resize;
 }
 
-.fc .fc-event .fc-event-resizer-end {
+.fc .fc-event .custom-resize-handle-bottom {
   bottom: -6px;
-  cursor: ns-resize;
 }
 
-.fc .fc-event:hover .fc-event-resizer,
-.fc .fc-event-selected .fc-event-resizer {
+.fc .fc-event:hover .custom-resize-handle,
+.fc .fc-event-selected .custom-resize-handle {
   opacity: 1;
   transform: translateX(-50%) scale(1.1);
 }
 
 /* Hide resize handles on very small events */
-.fc .fc-timegrid-event-short .fc-event-resizer {
+.fc .fc-timegrid-event-short .custom-resize-handle {
   display: none;
 }
 

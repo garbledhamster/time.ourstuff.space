@@ -1119,8 +1119,9 @@ async function init() {
         event.setEnd(addMinutes(event.start, 30));
       }
 
-      // When resizing, allow overlap - do not apply snapping
-      // This allows the user to expand timeblocks freely
+      // When resizing, do not apply snapping to allow flexible expansion/contraction
+      // Snapping is still applied during drag operations (see onEventDrop handler)
+      // This creates a more natural feel when adjusting timeblock sizes
 
       upsertEventFromCalendar(event);
     }

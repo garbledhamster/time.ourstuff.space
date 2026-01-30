@@ -2,15 +2,16 @@ import { eventColors } from "./utils.js";
 
 /**
  * Create resize handle elements for better visibility and touch targets
+ * Uses custom class names to avoid conflicts with FullCalendar's internal classes
  */
 function createResizeHandles() {
   const topHandle = document.createElement('div');
-  topHandle.className = 'fc-event-resizer fc-event-resizer-start';
-  topHandle.setAttribute('aria-label', 'Resize from top');
+  topHandle.className = 'custom-resize-handle custom-resize-handle-top';
+  topHandle.setAttribute('aria-hidden', 'true'); // Purely decorative, FullCalendar handles resize functionality
   
   const bottomHandle = document.createElement('div');
-  bottomHandle.className = 'fc-event-resizer fc-event-resizer-end';
-  bottomHandle.setAttribute('aria-label', 'Resize from bottom');
+  bottomHandle.className = 'custom-resize-handle custom-resize-handle-bottom';
+  bottomHandle.setAttribute('aria-hidden', 'true'); // Purely decorative, FullCalendar handles resize functionality
   
   return { top: topHandle, bottom: bottomHandle };
 }
@@ -37,7 +38,7 @@ export function createCalendar({ events, onSelectRange, onEventOpen, onEventPrev
     throw new Error("Calendar element not found");
   }
 
-  let selectedEventEl = null;
+  let selectedEventId = null; // Track by ID instead of DOM element reference
 
   const calendar = new FullCalendar.Calendar(calendarEl, {
     initialView: "timeGridWeek",
@@ -52,13 +53,16 @@ export function createCalendar({ events, onSelectRange, onEventOpen, onEventPrev
       const clickY = info.jsEvent.clientY;
       
       // Remove selected class from previously selected event
-      if (selectedEventEl && selectedEventEl !== info.el) {
-        selectedEventEl.classList.remove('fc-event-selected');
+      if (selectedEventId && selectedEventId !== info.event.id) {
+        const prevSelected = document.querySelector('.fc-event-selected');
+        if (prevSelected) {
+          prevSelected.classList.remove('fc-event-selected');
+        }
       }
       
       // Add selected class to clicked event
       info.el.classList.add('fc-event-selected');
-      selectedEventEl = info.el;
+      selectedEventId = info.event.id;
       
       if (onEventPreview) {
         onEventPreview(info.event, clickX, clickY);
@@ -66,9 +70,12 @@ export function createCalendar({ events, onSelectRange, onEventOpen, onEventPrev
     },
     select(info) {
       // Clear selection when selecting a new time range
-      if (selectedEventEl) {
-        selectedEventEl.classList.remove('fc-event-selected');
-        selectedEventEl = null;
+      if (selectedEventId) {
+        const prevSelected = document.querySelector('.fc-event-selected');
+        if (prevSelected) {
+          prevSelected.classList.remove('fc-event-selected');
+        }
+        selectedEventId = null;
       }
       
       if (onSelectRange) {
@@ -94,9 +101,23 @@ export function createCalendar({ events, onSelectRange, onEventOpen, onEventPrev
       });
       
       // Add resize handle elements for better visibility and touch targets
-      const handles = createResizeHandles();
-      info.el.appendChild(handles.top);
-      info.el.appendChild(handles.bottom);
+      // Check if handles already exist to avoid duplicates
+      if (!info.el.querySelector('.custom-resize-handle')) {
+        const handles = createResizeHandles();
+        info.el.appendChild(handles.top);
+        info.el.appendChild(handles.bottom);
+      }
+      
+      // Restore selected state if this event was selected
+      if (selectedEventId === info.event.id) {
+        info.el.classList.add('fc-event-selected');
+      }
+    },
+    eventWillUnmount(info) {
+      // Clear selection if the selected event is being removed
+      if (selectedEventId === info.event.id) {
+        selectedEventId = null;
+      }
     }
   });
 
