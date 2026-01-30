@@ -704,7 +704,7 @@ body.settings-open{
 
 /* FullCalendar list view day headers */
 .fc .fc-list-heading-cell{
-  background: color-mix(in srgb, var(--text-color) 6%, transparent) !important;
+  background: var(--surface-color) !important;
   color: var(--text-color) !important;
   border-color: var(--border-color) !important;
   font-weight: 700;
