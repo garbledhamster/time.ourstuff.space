@@ -26,6 +26,11 @@
         Tickets
       </button>
 
+      <button class="btn" id="openSettingsBtn" title="Open settings">
+        <svg class="btn-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M3.22 3.22l4.25 4.25M16.53 16.53l4.25 4.25M1 12h6M17 12h6M3.22 20.78l4.25-4.25M16.53 7.47l4.25-4.25"/></svg>
+        Settings
+      </button>
+
       <div class="spacer"></div>
 
       <div class="viewGroup">
@@ -160,6 +165,31 @@
       </section>
     </main>
   </div>
+
+  <!-- Settings Drawer -->
+  <div class="settingsOverlay" id="settingsOverlay"></div>
+  <aside class="settingsDrawer" id="settingsDrawer" aria-label="Settings panel">
+    <div class="settingsHeader">
+      <h2>Settings</h2>
+      <button class="btn btn-icon-only" id="closeSettingsBtn" title="Close settings">
+        <svg class="btn-icon" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </button>
+    </div>
+
+    <div class="settingsBody">
+      <!-- Theme Settings Section -->
+      <div class="settingsSection">
+        <h3 class="settingsSectionTitle">Theme</h3>
+        <div class="settingsContent">
+          <div class="fieldRow">
+            <label for="settingsThemeSelect" class="label">Theme Preset</label>
+            <select class="input" id="settingsThemeSelect"></select>
+          </div>
+          <div class="themeCustom" id="settingsThemeCustomFields"></div>
+        </div>
+      </div>
+    </div>
+  </aside>
 
   <!-- Modal: edit time log -->
   <div class="modalOverlay" id="modalOverlay" role="dialog" aria-modal="true" aria-label="Edit time log">
