@@ -82,6 +82,53 @@ body{
   margin: 0 4px;
 }
 
+/* Add Ticket Drawer */
+.addTicketDrawer{
+  max-height: 0;
+  overflow: hidden;
+  background: color-mix(in srgb, var(--surface-color) 95%, transparent);
+  backdrop-filter: blur(10px);
+  border-bottom: 1px solid var(--border-color);
+  transition: max-height .28s cubic-bezier(0.4, 0, 0.2, 1), padding .28s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.addTicketDrawer.open{
+  max-height: 200px;
+  padding: 12px 14px;
+}
+.addTicketDrawerContent{
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.addTicketDrawerFields{
+  display: flex;
+  gap: 8px;
+  flex: 1;
+  min-width: 0;
+}
+.addTicketDrawerFields .input{
+  flex: 1;
+  min-width: 120px;
+}
+.addTicketDrawerActions{
+  display: flex;
+  gap: 8px;
+}
+
+@media (max-width: 768px){
+  .addTicketDrawerContent{
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .addTicketDrawerFields{
+    flex-direction: column;
+  }
+  .addTicketDrawerFields .input{
+    width: 100%;
+  }
+}
+
 /* Error banner */
 .errorBanner{
   display:none;
@@ -276,6 +323,16 @@ select.input option{
   background: transparent;
 }
 
+/* Ticket List Nav Bar */
+.ticketListNav{
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 12px;
+  border-bottom: 1px solid var(--border-color);
+  background: color-mix(in srgb, var(--text-color) 3%, transparent);
+}
+
 .ticketList{
   padding: 10px 10px 14px;
   overflow:auto;
@@ -358,6 +415,40 @@ select.input option{
 .ticketClient:empty{
   display:none;
 }
+
+/* Ticket Editing Mode */
+.ticketItem.editing{
+  border-color: color-mix(in srgb, var(--primary-color) 65%, transparent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--primary-color) 25%, transparent), 0 10px 22px rgba(0,0,0,.18);
+}
+.ticketItem.editing .ticketKey,
+.ticketItem.editing .ticketTitle,
+.ticketItem.editing .ticketClient{
+  display: none;
+}
+.ticketEditFields{
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.ticketEditField{
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 12px;
+  border-radius: 8px;
+}
+.ticketEditActions{
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.ticketNote.readOnly .noteInput{
+  opacity: 0.7;
+  cursor: default;
+  background: color-mix(in srgb, var(--text-color) 2%, transparent);
+}
+
 .ticketEntries{
   margin-top: 10px;
   padding-top: 10px;
@@ -599,6 +690,31 @@ select.input option{
   display:flex;
   flex-direction:column;
   gap:12px;
+}
+
+/* Settings Data Management */
+.settingsDataRow{
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+.settingsDataItem{
+  padding: 14px;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--text-color) 3%, transparent);
+}
+.settingsDataLabel{
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text-color);
+  margin-bottom: 4px;
+}
+.settingsDataDesc{
+  font-size: 11px;
+  color: var(--text-muted-color);
+  margin-bottom: 10px;
+  line-height: 1.4;
 }
 
 /* Disable body scroll when settings are open */

@@ -26,6 +26,10 @@
         Tickets
       </button>
 
+      <button class="btn btn-icon-only primary" id="addTicketNavBtn" title="Add ticket">
+        <svg class="btn-icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+      </button>
+
       <button class="btn btn-icon-only" id="openSettingsBtn" title="Open settings">
         <svg class="btn-icon" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M12 1v6M12 17v6M3.22 3.22l4.25 4.25M16.53 16.53l4.25 4.25M1 12h6M17 12h6M3.22 20.78l4.25-4.25M16.53 7.47l4.25-4.25"/></svg>
       </button>
@@ -59,6 +63,27 @@
         </button>
       </div>
     </header>
+
+    <!-- Add Ticket Drawer -->
+    <div class="addTicketDrawer" id="addTicketDrawer">
+      <div class="addTicketDrawerContent">
+        <div class="addTicketDrawerFields">
+          <input class="input" id="addTicketKeyInput" placeholder="Ticket ID or URL (e.g. 12345 or Zendesk link)" />
+          <input class="input" id="addTicketTitleInput" placeholder="Title" />
+          <input class="input" id="addTicketClientInput" placeholder="Client" />
+        </div>
+        <div class="addTicketDrawerActions">
+          <button class="btn" id="addTicketCancelBtn">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+            Cancel
+          </button>
+          <button class="btn primary" id="addTicketSaveBtn">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+            Save Ticket
+          </button>
+        </div>
+      </div>
+    </div>
 
     <div class="errorBanner" id="errorBanner" role="alert" aria-live="polite"></div>
 
@@ -104,41 +129,19 @@
           </div>
         </div>
 
+        <!-- Ticket List Nav Bar -->
+        <div class="ticketListNav" id="ticketListNav">
+          <button class="btn btn-icon-only" id="expandAllBtn" title="Expand all tickets" aria-label="Expand all tickets to show full details">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
+          </button>
+          <button class="btn btn-icon-only" id="collapseAllBtn" title="Collapse all tickets" aria-label="Collapse all inactive tickets to show only ticket keys">
+            <svg class="btn-icon" viewBox="0 0 24 24"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg>
+          </button>
+        </div>
+
         <div class="ticketList" id="ticketList"></div>
 
-        <div class="ticketsFooter">
-          <div class="fieldRow">
-            <input class="input" id="ticketKeyInput" placeholder="Ticket ID or URL (e.g. 12345 or Zendesk link)" />
-          </div>
-          <div class="fieldRow">
-            <input class="input" id="ticketTitleInput" placeholder="Title" />
-          </div>
-          <div class="fieldRow">
-            <input class="input" id="ticketClientInput" placeholder="Client" />
-          </div>
-
-          <div class="fieldRow">
-            <button class="btn btn-icon-only primary" id="addTicketBtn" title="Add ticket">
-              <svg class="btn-icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
-            </button>
-            <button class="btn btn-icon-only" id="exportBtn" title="Export time logs to CSV">
-              <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
-            </button>
-            <button class="btn btn-icon-only" id="importBtn" title="Import Zendesk tickets from CSV">
-              <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
-            </button>
-            <input class="hiddenInput" id="importInput" type="file" accept=".csv,text/csv" />
-          </div>
-
-          <div class="fieldRow" style="gap:8px;">
-            <button class="btn btn-icon-only" id="expandAllBtn" title="Expand all tickets" aria-label="Expand all tickets to show full details">
-              <svg class="btn-icon" viewBox="0 0 24 24"><path d="m7 15 5 5 5-5"/><path d="m7 9 5-5 5 5"/></svg>
-            </button>
-            <button class="btn btn-icon-only" id="collapseAllBtn" title="Collapse all tickets" aria-label="Collapse all inactive tickets to show only ticket keys">
-              <svg class="btn-icon" viewBox="0 0 24 24"><path d="m17 11-5-5-5 5"/><path d="m17 18-5-5-5 5"/></svg>
-            </button>
-          </div>
-        </div>
+        <input class="hiddenInput" id="importInput" type="file" accept=".csv,text/csv" />
       </aside>
 
       <!-- Calendar area -->
@@ -185,6 +188,31 @@
             <select class="input" id="settingsThemeSelect"></select>
           </div>
           <div class="themeCustom" id="settingsThemeCustomFields"></div>
+        </div>
+      </div>
+
+      <!-- Data Management Section -->
+      <div class="settingsSection">
+        <h3 class="settingsSectionTitle">Data</h3>
+        <div class="settingsContent">
+          <div class="settingsDataRow">
+            <div class="settingsDataItem">
+              <div class="settingsDataLabel">Export Time Logs</div>
+              <div class="settingsDataDesc">Download all time logs as a CSV file</div>
+              <button class="btn" id="exportBtn" title="Export time logs to CSV">
+                <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 15V3"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="m7 10 5 5 5-5"/></svg>
+                Export CSV
+              </button>
+            </div>
+            <div class="settingsDataItem">
+              <div class="settingsDataLabel">Import Tickets</div>
+              <div class="settingsDataDesc">Import Zendesk tickets from a CSV file</div>
+              <button class="btn" id="importBtn" title="Import Zendesk tickets from CSV">
+                <svg class="btn-icon" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="m17 8-5-5-5 5"/><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/></svg>
+                Import CSV
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     </div>
