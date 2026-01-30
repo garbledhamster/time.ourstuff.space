@@ -486,6 +486,94 @@ textarea.input{
   .calendarWrap{ padding: 10px; }
 }
 
+/* Settings Drawer */
+.settingsOverlay{
+  position:fixed;
+  inset:0;
+  background: color-mix(in srgb, var(--background-color) 75%, transparent);
+  opacity:0;
+  pointer-events:none;
+  transition: opacity .22s ease;
+  z-index: 60;
+  backdrop-filter: blur(4px);
+}
+.settingsOverlay.open{
+  opacity:1;
+  pointer-events:auto;
+}
+
+.settingsDrawer{
+  position:fixed;
+  top:0;
+  right:0;
+  height:100vh;
+  width: min(480px, 92vw);
+  background: color-mix(in srgb, var(--surface-color) 95%, transparent);
+  backdrop-filter: blur(14px);
+  box-shadow: -10px 0 60px rgba(0,0,0,.6);
+  transform: translateX(105%);
+  transition: transform .28s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 70;
+  display:flex;
+  flex-direction:column;
+  border-left: 1px solid var(--border-color);
+  overflow:hidden;
+}
+.settingsDrawer.open{
+  transform: translateX(0%);
+}
+
+.settingsHeader{
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--border-color);
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
+}
+.settingsHeader h2{
+  margin:0;
+  font-size: 18px;
+  letter-spacing:.3px;
+  font-weight: 800;
+  color: var(--text-color);
+}
+
+.settingsBody{
+  flex:1;
+  overflow-y:auto;
+  padding: 18px;
+  min-height:0;
+}
+
+.settingsSection{
+  margin-bottom: 28px;
+}
+.settingsSection:last-child{
+  margin-bottom: 0;
+}
+
+.settingsSectionTitle{
+  margin:0 0 14px 0;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing:.2px;
+  color: var(--text-color);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.settingsContent{
+  display:flex;
+  flex-direction:column;
+  gap:12px;
+}
+
+/* Disable body scroll when settings are open */
+body.settings-open{
+  overflow:hidden;
+}
+
 /* Modal */
 .modalOverlay{
   position:fixed;

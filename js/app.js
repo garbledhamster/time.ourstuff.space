@@ -126,7 +126,13 @@ const elements = {
   themePresetSelect: $("themePresetSelect"),
   themeCustomFields: $("themeCustomFields"),
   expandAllBtn: $("expandAllBtn"),
-  collapseAllBtn: $("collapseAllBtn")
+  collapseAllBtn: $("collapseAllBtn"),
+  openSettingsBtn: $("openSettingsBtn"),
+  closeSettingsBtn: $("closeSettingsBtn"),
+  settingsOverlay: $("settingsOverlay"),
+  settingsDrawer: $("settingsDrawer"),
+  settingsThemeSelect: $("settingsThemeSelect"),
+  settingsThemeCustomFields: $("settingsThemeCustomFields")
 };
 
 let calendar = null;
@@ -330,6 +336,63 @@ function renderThemeControls() {
   updateThemeUIVisibility();
   syncCustomColorInputs();
 }
+
+function renderSettingsThemeControls() {
+  if (!elements.settingsThemeSelect || !elements.settingsThemeCustomFields) return;
+
+  elements.settingsThemeSelect.innerHTML = "";
+  for (const theme of THEME_PRESET_LIST) {
+    const option = document.createElement("option");
+    option.value = theme.id;
+    option.textContent = theme.label;
+    elements.settingsThemeSelect.append(option);
+  }
+  const customOption = document.createElement("option");
+  customOption.value = "custom";
+  customOption.textContent = "Custom";
+  elements.settingsThemeSelect.append(customOption);
+
+  elements.settingsThemeSelect.value = state.settings.theme.presetId;
+
+  elements.settingsThemeCustomFields.innerHTML = "";
+  const grid = document.createElement("div");
+  grid.className = "colorGrid";
+  for (const key of THEME_COLOR_KEYS) {
+    const field = document.createElement("div");
+    field.className = "colorField";
+
+    const label = document.createElement("label");
+    label.textContent = THEME_COLOR_LABELS[key];
+
+    const input = document.createElement("input");
+    input.type = "color";
+    input.value = state.settings.theme.customColors[key] || DEFAULT_THEME_COLORS[key];
+    input.dataset.colorKey = key;
+    input.addEventListener("input", (event) => {
+      const nextValue = event.target.value;
+      state.settings.theme.customColors = {
+        ...state.settings.theme.customColors,
+        [key]: nextValue
+      };
+      if (state.settings.theme.presetId === "custom") {
+        applyThemeColors(getActiveThemeColors());
+      }
+      persistThemeSettings();
+      syncCustomColorInputs();
+    });
+
+    field.append(label, input);
+    grid.append(field);
+  }
+  elements.settingsThemeCustomFields.append(grid);
+
+  if (state.settings.theme.presetId === "custom") {
+    elements.settingsThemeCustomFields.classList.add("visible");
+  } else {
+    elements.settingsThemeCustomFields.classList.remove("visible");
+  }
+}
+
 function normalizeEventRecord(record) {
   if (!record) return null;
   const start = new Date(record.start);
@@ -748,6 +811,22 @@ function wireDrawer() {
   elements.drawerOverlay.addEventListener("click", close);
 }
 
+function wireSettingsDrawer() {
+  const open = () => {
+    elements.settingsDrawer.classList.add("open");
+    elements.settingsOverlay.classList.add("open");
+    document.body.classList.add("settings-open");
+  };
+  const close = () => {
+    elements.settingsDrawer.classList.remove("open");
+    elements.settingsOverlay.classList.remove("open");
+    document.body.classList.remove("settings-open");
+  };
+  elements.openSettingsBtn.addEventListener("click", open);
+  elements.closeSettingsBtn.addEventListener("click", close);
+  elements.settingsOverlay.addEventListener("click", close);
+}
+
 function wireInputs() {
   elements.addTicketBtn.addEventListener("click", addTicket);
   elements.ticketKeyInput.addEventListener("keydown", (event) => {
@@ -805,6 +884,25 @@ function wireInputs() {
       applyThemeColors(getActiveThemeColors());
       updateThemeUIVisibility();
       syncCustomColorInputs();
+      persistThemeSettings();
+    });
+  }
+
+  if (elements.settingsThemeSelect) {
+    elements.settingsThemeSelect.addEventListener("change", (event) => {
+      state.settings.theme.presetId = event.target.value;
+      if (state.settings.theme.presetId !== "custom") {
+        const presetColors = THEME_PRESETS[state.settings.theme.presetId]?.colors;
+        if (presetColors) {
+          state.settings.theme.customColors = {
+            ...state.settings.theme.customColors,
+            ...presetColors
+          };
+        }
+      }
+      applyThemeColors(getActiveThemeColors());
+      renderSettingsThemeControls();
+      renderThemeControls();
       persistThemeSettings();
     });
   }
@@ -967,8 +1065,10 @@ async function init() {
 
   wireNavigation();
   wireDrawer();
+  wireSettingsDrawer();
   wireInputs();
   renderThemeControls();
+  renderSettingsThemeControls();
   updateTicketList();
 }
 
