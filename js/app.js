@@ -96,6 +96,7 @@ const state = {
   events: [],
   artifacts: [],
   activeTicketId: null,
+  editingTicketId: null,
   searchTerm: "",
   statusFilters: ["open", "in-progress"],
   clientFilter: "",
@@ -447,11 +448,16 @@ function updateTicketList() {
     collapsedTickets: state.collapsedTickets,
     zendeskUrl: state.settings.zendeskUrl,
     onSelect: (id) => {
+      // Cancel editing mode if we're selecting a different ticket
+      if (state.editingTicketId) {
+        cancelEdit();
+      }
       state.activeTicketId = id;
       state.collapsedTickets.delete(id);
       updateTicketList();
     },
     onAddLog: (id) => addLogForTicket(id),
+    onEdit: (id) => editTicket(id),
     onDelete: (id) => deleteTicket(id),
     onNoteChange: (id, note) => {
       const ticket = state.tickets.find((t) => t.id === id);
@@ -467,6 +473,12 @@ function updateTicketList() {
 }
 
 function addTicket() {
+  // If we're in editing mode, save the edited ticket instead
+  if (state.editingTicketId) {
+    saveEditedTicket();
+    return;
+  }
+
   const key = extractTicketKey(elements.ticketKeyInput.value);
   const title = elements.ticketTitleInput.value.trim();
   const client = elements.ticketClientInput.value.trim();
@@ -603,6 +615,87 @@ function addLogForTicket(ticketId, range) {
   calendar.addEvent(toCalendarEvent(record));
   syncStorage();
   updateTicketList();
+}
+
+function editTicket(ticketId) {
+  const ticket = state.tickets.find((item) => item.id === ticketId);
+  if (!ticket) return;
+
+  // Populate the form fields with the current ticket values
+  elements.ticketKeyInput.value = ticket.key || "";
+  elements.ticketTitleInput.value = ticket.title || "";
+  elements.ticketClientInput.value = ticket.client || "";
+
+  // Change the add button to a save button
+  const addBtn = elements.addTicketBtn;
+  const originalText = addBtn.innerHTML;
+  addBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Save changes';
+  addBtn.classList.add('editing');
+
+  // Store the ticket being edited
+  state.editingTicketId = ticketId;
+
+  // Focus on the key input
+  elements.ticketKeyInput.focus();
+  elements.ticketKeyInput.select();
+
+  // Scroll to top of tickets panel to show the form
+  elements.ticketsPanel.scrollTop = 0;
+}
+
+function saveEditedTicket() {
+  if (!state.editingTicketId) return;
+
+  const ticket = state.tickets.find((item) => item.id === state.editingTicketId);
+  if (!ticket) {
+    cancelEdit();
+    return;
+  }
+
+  const key = extractTicketKey(elements.ticketKeyInput.value);
+  const title = elements.ticketTitleInput.value.trim();
+  const client = elements.ticketClientInput.value.trim();
+
+  if (!key && !title) {
+    cancelEdit();
+    return;
+  }
+
+  // Update the ticket
+  ticket.key = key;
+  ticket.title = title;
+  ticket.client = client;
+
+  // Update all events associated with this ticket
+  for (const record of state.events) {
+    if (record.ticketId === ticket.id) {
+      record.ticketKey = ticket.key;
+      record.title = normalizeTitle(ticket.key, ticket.title);
+      const event = calendar.getEventById(record.id);
+      if (event) {
+        event.setProp('title', record.title);
+      }
+    }
+  }
+
+  cancelEdit();
+  syncStorage();
+  updateTicketList();
+}
+
+function cancelEdit() {
+  // Clear the form
+  elements.ticketKeyInput.value = "";
+  elements.ticketTitleInput.value = "";
+  elements.ticketClientInput.value = "";
+
+  // Restore the add button
+  const addBtn = elements.addTicketBtn;
+  addBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Add ticket';
+  addBtn.classList.remove('editing');
+
+  // Clear the editing state
+  state.editingTicketId = null;
 }
 
 function deleteTicket(ticketId) {
@@ -752,12 +845,15 @@ function wireInputs() {
   elements.addTicketBtn.addEventListener("click", addTicket);
   elements.ticketKeyInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") addTicket();
+    if (event.key === "Escape" && state.editingTicketId) cancelEdit();
   });
   elements.ticketTitleInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") addTicket();
+    if (event.key === "Escape" && state.editingTicketId) cancelEdit();
   });
   elements.ticketClientInput.addEventListener("keydown", (event) => {
     if (event.key === "Enter") addTicket();
+    if (event.key === "Escape" && state.editingTicketId) cancelEdit();
   });
 
   elements.ticketSearchInput.addEventListener(
