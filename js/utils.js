@@ -68,7 +68,17 @@ export function hashHue(str) {
   return h % 360;
 }
 
-export function eventColors(seed) {
+export function eventColors(seed, customColor = null) {
+  // If a custom color is provided, use it
+  if (customColor) {
+    return {
+      backgroundColor: `${customColor}33`, // Add transparency (20%)
+      borderColor: `${customColor}8C`, // Add transparency (55%)
+      textColor: `rgba(255,255,255,.95)`
+    };
+  }
+  
+  // Otherwise, use the hash-based color
   const hue = hashHue(seed);
   return {
     backgroundColor: `hsla(${hue}, 80%, 55%, 0.20)`,

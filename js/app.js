@@ -3,6 +3,7 @@ import { createCalendar, toCalendarEvent } from "./calendar.js";
 import { createLogModal } from "./modal.js";
 import { createPreviewCard } from "./preview-card.js";
 import { createEntryPopup } from "./entry-popup.js";
+import { showColorPicker } from "./color-picker.js";
 import {
   loadEvents,
   loadSettings,
@@ -527,6 +528,7 @@ function updateTicketList() {
     },
     onAddLog: (id) => addLogForTicket(id),
     onEdit: (id) => editTicket(id),
+    onColorChange: (id) => changeTicketColor(id),
     onDelete: (id) => deleteTicket(id),
     onNoteChange: (id, note) => {
       const ticket = state.tickets.find((t) => t.id === id);
@@ -559,7 +561,8 @@ function addTicket() {
     title,
     status: "open",
     client,
-    note: ""
+    note: "",
+    color: null
   };
 
   state.tickets = [ticket, ...state.tickets];
@@ -645,7 +648,8 @@ async function importTicketsFromCsv(file) {
         title: subject,
         status,
         client: "",
-        note: ""
+        note: "",
+        color: null
       };
       nextTickets.unshift(ticket);
       keyLookup.set(ticket.key, ticket);
@@ -682,7 +686,8 @@ function addLogForTicket(ticketId, range) {
 
   if (!record) return;
   state.events = [...state.events, record];
-  calendar.addEvent(toCalendarEvent(record));
+  const ticketColor = ticket.color || null;
+  calendar.addEvent(toCalendarEvent(record, ticketColor));
   syncStorage();
   updateTicketList();
 }
@@ -789,6 +794,31 @@ function deleteTicket(ticketId) {
   }
   syncStorage();
   updateTicketList();
+}
+
+function changeTicketColor(ticketId) {
+  const ticket = state.tickets.find((item) => item.id === ticketId);
+  if (!ticket) return;
+
+  showColorPicker(ticketId, ticket.color, (id, color) => {
+    // Update the ticket color
+    ticket.color = color;
+    syncStorage();
+    
+    // Update all calendar events for this ticket
+    const ticketEvents = state.events.filter(event => event.ticketId === ticketId);
+    ticketEvents.forEach(eventData => {
+      const calendarEvent = calendar.getEventById(eventData.id);
+      if (calendarEvent) {
+        // Remove and re-add the event with new color
+        calendarEvent.remove();
+        calendar.addEvent(toCalendarEvent(eventData, color));
+      }
+    });
+    
+    // Re-render the ticket list to show the new color
+    updateTicketList();
+  });
 }
 
 function upsertEventFromCalendar(event) {
@@ -1149,6 +1179,7 @@ async function init() {
 
   calendar = createCalendar({
     events: state.events,
+    tickets: state.tickets,
     onSelectRange: handleCalendarSelect,
     onEventPreview: handleEventPreview,
     onEventOpen: openEventEditor,
