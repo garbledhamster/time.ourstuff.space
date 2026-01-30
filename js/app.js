@@ -1119,29 +1119,8 @@ async function init() {
         event.setEnd(addMinutes(event.start, 30));
       }
 
-      // Get other events (excluding the current one being resized)
-      const otherEvents = state.events.filter((e) => e.id !== event.id);
-
-      // Determine which boundary changed
-      const startChanged = startDelta && (startDelta.milliseconds !== 0 || startDelta.days !== 0);
-      const endChanged = endDelta && (endDelta.milliseconds !== 0 || endDelta.days !== 0);
-
-      let mode = 'move';
-      if (startChanged && !endChanged) {
-        mode = 'resize-start';
-      } else if (endChanged && !startChanged) {
-        mode = 'resize-end';
-      }
-
-      // Apply snap-to-event-boundaries logic
-      const snapped = snapToEventBoundaries(event.start, event.end, otherEvents, {
-        thresholdMinutes: 15,
-        mode
-      });
-      if (snapped.snapped) {
-        event.setStart(snapped.start);
-        event.setEnd(snapped.end);
-      }
+      // When resizing, allow overlap - do not apply snapping
+      // This allows the user to expand timeblocks freely
 
       upsertEventFromCalendar(event);
     }

@@ -697,10 +697,57 @@ body.settings-open{
 .fc .fc-event{
   border-radius: 10px !important;
   border-width: 1px !important;
+  position: relative;
 }
 .fc .fc-event-title{ font-weight: 900; }
 .fc .fc-event-time{ font-weight: 800; opacity:.9; }
 .fc .fc-daygrid-event{ padding: 2px 4px !important; }
+
+/* Selected event highlight */
+.fc .fc-event-selected,
+.fc .fc-event:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 40%, transparent) !important;
+  border-color: var(--primary-color) !important;
+  border-width: 2px !important;
+  z-index: 10 !important;
+}
+
+/* Resize handles - visible circles on top and bottom of event */
+.fc .fc-event .fc-event-resizer {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--primary-color);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.fc .fc-event .fc-event-resizer-start {
+  top: -6px;
+  cursor: ns-resize;
+}
+
+.fc .fc-event .fc-event-resizer-end {
+  bottom: -6px;
+  cursor: ns-resize;
+}
+
+.fc .fc-event:hover .fc-event-resizer,
+.fc .fc-event-selected .fc-event-resizer {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.1);
+}
+
+/* Hide resize handles on very small events */
+.fc .fc-timegrid-event-short .fc-event-resizer {
+  display: none;
+}
 
 /* FullCalendar list view day headers */
 .fc .fc-list-heading-cell{
