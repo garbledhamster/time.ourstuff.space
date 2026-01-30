@@ -610,6 +610,14 @@ textarea.input{
 .fc .fc-event-time{ font-weight: 800; opacity:.9; }
 .fc .fc-daygrid-event{ padding: 2px 4px !important; }
 
+/* FullCalendar list view day headers */
+.fc .fc-list-heading-cell{
+  background: color-mix(in srgb, var(--text-color) 6%, transparent) !important;
+  color: var(--text-color) !important;
+  border-color: var(--border-color) !important;
+  font-weight: 700;
+}
+
 /* Button icons */
 .btn-icon{
   width: 16px;
