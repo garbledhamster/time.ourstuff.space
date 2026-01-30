@@ -164,6 +164,14 @@ textarea.input{
   min-height: 120px;
   resize: vertical;
 }
+select.input{
+  background: var(--surface-color);
+  color: var(--text-color);
+}
+select.input option{
+  background: var(--surface-color);
+  color: var(--text-color);
+}
 .hiddenInput{
   display:none;
 }
