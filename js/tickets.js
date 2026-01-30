@@ -1,4 +1,5 @@
 import { normalizeTitle } from "./utils.js";
+import { addTooltip } from "./tooltip.js";
 
 function formatMinutes(totalMinutes) {
   const minutes = Math.max(0, Math.round(totalMinutes));
@@ -124,20 +125,20 @@ export function renderTickets({
     const addBtn = document.createElement("button");
     addBtn.className = "iconBtn";
     addBtn.type = "button";
-    addBtn.title = "Add time block";
     addBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg>';
+    addTooltip(addBtn, "Add time block");
 
     const editBtn = document.createElement("button");
     editBtn.className = "iconBtn";
     editBtn.type = "button";
-    editBtn.title = "Edit ticket";
     editBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+    addTooltip(editBtn, "Edit ticket");
 
     const delBtn = document.createElement("button");
     delBtn.className = "iconBtn danger";
     delBtn.type = "button";
-    delBtn.title = "Delete ticket";
     delBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M10 11v6"/><path d="M14 11v6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M3 6h18"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>';
+    addTooltip(delBtn, "Delete ticket");
 
     actions.append(addBtn, editBtn, delBtn);
     meta.append(badge, actions);

@@ -34,6 +34,7 @@ import {
   migrateToArtifacts,
   extractFromArtifacts
 } from "./artifacts.js";
+import { initTooltips, addTooltip } from "./tooltip.js";
 
 const DEFAULT_THEME_ID = "midnight";
 const DEFAULT_THEME_COLORS = {
@@ -882,11 +883,28 @@ function wireNavigation() {
   elements.prevBtn.addEventListener("click", () => calendar.prev());
   elements.nextBtn.addEventListener("click", () => calendar.next());
   elements.todayBtn.addEventListener("click", () => calendar.today());
+  
+  // Add tooltips to navigation buttons
+  addTooltip(elements.prevBtn, "Previous");
+  addTooltip(elements.nextBtn, "Next");
+  addTooltip(elements.todayBtn, "Today");
 
   document.querySelectorAll(".viewGroup [data-view]").forEach((btn) => {
     btn.addEventListener("click", () => {
       calendar.changeView(btn.dataset.view);
     });
+    
+    // Add tooltips to view buttons based on their data-view attribute
+    const viewName = btn.dataset.view;
+    let tooltipText = "";
+    if (viewName === "timeGridDay") tooltipText = "Day";
+    else if (viewName === "timeGridWeek") tooltipText = "Week";
+    else if (viewName === "dayGridMonth") tooltipText = "Month";
+    else if (viewName === "listWeek") tooltipText = "List";
+    
+    if (tooltipText) {
+      addTooltip(btn, tooltipText);
+    }
   });
 }
 
@@ -917,6 +935,9 @@ function wireSettingsDrawer() {
   };
   elements.openSettingsBtn.addEventListener("click", open);
   elements.closeSettingsBtn.addEventListener("click", close);
+  
+  // Add tooltip to settings button
+  addTooltip(elements.openSettingsBtn, "Settings");
   elements.settingsOverlay.addEventListener("click", close);
 }
 
@@ -1024,6 +1045,9 @@ function wireInputs() {
 }
 
 async function init() {
+  // Initialize tooltip system
+  initTooltips();
+  
   if (typeof localforage === "undefined") {
     reportError("localForage failed to load. Falling back to local storage.");
   }
