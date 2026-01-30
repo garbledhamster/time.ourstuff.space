@@ -288,6 +288,10 @@ textarea.input{
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--primary-color) 30%, transparent), 0 10px 22px rgba(0,0,0,.18);
 }
 .ticketItem:active{ cursor:grabbing; }
+.ticketItem.dragging{
+  opacity: 0.5;
+  cursor: grabbing;
+}
 .dragHandle{
   width: 12px;
   height: 28px;
@@ -701,6 +705,11 @@ body.settings-open{
 .fc .fc-event-title{ font-weight: 900; }
 .fc .fc-event-time{ font-weight: 800; opacity:.9; }
 .fc .fc-daygrid-event{ padding: 2px 4px !important; }
+.fc .ghost-event{
+  opacity: 0.6 !important;
+  border-style: dashed !important;
+  border-width: 2px !important;
+}
 
 /* FullCalendar list view day headers */
 .fc .fc-list-heading-cell{

@@ -70,6 +70,7 @@ export function renderTickets({
   for (const ticket of filtered) {
     const item = document.createElement("div");
     item.className = "ticketItem";
+    item.dataset.ticketId = ticket.id;
     if (ticket.id === activeTicketId) {
       item.classList.add("active");
     }
