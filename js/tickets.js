@@ -115,13 +115,13 @@ export function renderTickets({
       client.textContent = ticket.client;
     }
 
-    // Add color bubble indicator
-    const colorBubble = document.createElement("span");
-    colorBubble.className = "ticketColorBubble";
+    // Add color bubble indicator if ticket has a color
     if (ticket.color) {
+      const colorBubble = document.createElement("span");
+      colorBubble.className = "ticketColorBubble";
       colorBubble.style.backgroundColor = ticket.color;
+      client.appendChild(colorBubble);
     }
-    client.appendChild(colorBubble);
 
     const meta = document.createElement("div");
     meta.className = "ticketMeta";

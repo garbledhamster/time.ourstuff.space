@@ -472,10 +472,6 @@ select.input option{
   vertical-align: middle;
 }
 
-.ticketColorBubble:empty {
-  display: none;
-}
-
 /* Calendar */
 .calendarWrap{
   flex:1;
