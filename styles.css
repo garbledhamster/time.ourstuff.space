@@ -180,6 +180,10 @@ textarea.input{
   padding: 12px 12px 10px;
   border-bottom: 1px solid var(--border-color);
 }
+.ticketsFooter{
+  padding: 10px 12px 12px;
+  border-top: 1px solid var(--border-color);
+}
 .ticketsTitleRow{
   display:flex;
   align-items:center;
