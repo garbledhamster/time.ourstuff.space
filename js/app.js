@@ -105,7 +105,7 @@ const state = {
 };
 
 const elements = {
-  // Add ticket drawer (new)
+  // Add ticket drawer
   addTicketNavBtn: $("addTicketNavBtn"),
   addTicketDrawer: $("addTicketDrawer"),
   addTicketKeyInput: $("addTicketKeyInput"),
@@ -113,11 +113,7 @@ const elements = {
   addTicketClientInput: $("addTicketClientInput"),
   addTicketSaveBtn: $("addTicketSaveBtn"),
   addTicketCancelBtn: $("addTicketCancelBtn"),
-  // Legacy (now unused but kept for reference)
-  ticketKeyInput: $("ticketKeyInput"),
-  ticketTitleInput: $("ticketTitleInput"),
-  ticketClientInput: $("ticketClientInput"),
-  addTicketBtn: $("addTicketBtn"),
+  // Ticket panel elements
   ticketList: $("ticketList"),
   ticketsCount: $("ticketsCount"),
   ticketSearchInput: $("ticketSearchInput"),
@@ -540,13 +536,6 @@ function updateTicketList() {
     onSaveEdit: (id, data) => saveEditedTicketInPlace(id, data),
     onCancelEdit: () => cancelEdit(),
     onDelete: (id) => deleteTicket(id),
-    onNoteChange: (id, note) => {
-      const ticket = state.tickets.find((t) => t.id === id);
-      if (ticket) {
-        ticket.note = note;
-        syncStorage();
-      }
-    },
     onEntryTimeClick: (event, ticket, clickX, clickY) => {
       handleEntryTimeClick(event, ticket, clickX, clickY);
     }
@@ -571,12 +560,7 @@ function addTicket() {
 
   state.tickets = [ticket, ...state.tickets];
   
-  // Clear drawer inputs
-  if (elements.addTicketKeyInput) elements.addTicketKeyInput.value = "";
-  if (elements.addTicketTitleInput) elements.addTicketTitleInput.value = "";
-  if (elements.addTicketClientInput) elements.addTicketClientInput.value = "";
-  
-  // Close the drawer
+  // Close the drawer (which also clears inputs)
   closeAddTicketDrawer();
   
   state.activeTicketId = ticket.id;
@@ -585,6 +569,11 @@ function addTicket() {
 }
 
 function openAddTicketDrawer() {
+  // Cancel any ticket editing to avoid having two edit interfaces open
+  if (state.editingTicketId) {
+    cancelEdit();
+  }
+  
   if (elements.addTicketDrawer) {
     elements.addTicketDrawer.classList.add("open");
     if (elements.addTicketKeyInput) {
@@ -741,6 +730,7 @@ function saveEditedTicketInPlace(ticketId, data) {
   const key = extractTicketKey(data.key || "");
   const title = (data.title || "").trim();
   const client = (data.client || "").trim();
+  const note = data.note !== undefined ? data.note : ticket.note;
 
   if (!key && !title) {
     cancelEdit();
@@ -751,6 +741,7 @@ function saveEditedTicketInPlace(ticketId, data) {
   ticket.key = key;
   ticket.title = title;
   ticket.client = client;
+  ticket.note = note;
 
   // Update all events associated with this ticket
   for (const record of state.events) {

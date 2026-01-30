@@ -39,7 +39,6 @@ export function renderTickets({
   onSaveEdit,
   onCancelEdit,
   onDelete,
-  onNoteChange,
   onEntryTimeClick
 }) {
   const term = String(searchTerm || "").trim().toLowerCase();
@@ -122,6 +121,17 @@ export function renderTickets({
       editFields.append(keyInput, titleInput, clientInput);
       body.append(editFields);
 
+      // Helper function to get save data including note from DOM
+      const getSaveData = () => {
+        const noteEl = document.getElementById(`note-${ticket.id}`);
+        return {
+          key: keyInput.value,
+          title: titleInput.value,
+          client: clientInput.value,
+          note: noteEl ? noteEl.value : ticket.note
+        };
+      };
+
       // Edit actions
       const editActions = document.createElement("div");
       editActions.className = "ticketEditActions";
@@ -133,11 +143,7 @@ export function renderTickets({
       saveBtn.addEventListener("click", (e) => {
         e.stopPropagation();
         if (onSaveEdit) {
-          onSaveEdit(ticket.id, {
-            key: keyInput.value,
-            title: titleInput.value,
-            client: clientInput.value
-          });
+          onSaveEdit(ticket.id, getSaveData());
         }
       });
 
@@ -161,11 +167,7 @@ export function renderTickets({
           if (e.key === "Enter") {
             e.preventDefault();
             if (onSaveEdit) {
-              onSaveEdit(ticket.id, {
-                key: keyInput.value,
-                title: titleInput.value,
-                client: clientInput.value
-              });
+              onSaveEdit(ticket.id, getSaveData());
             }
           }
           if (e.key === "Escape") {
@@ -321,13 +323,8 @@ export function renderTickets({
       noteInput.setAttribute("aria-label", "Ticket note");
       noteInput.readOnly = !isEditing;
       noteInput.addEventListener("click", (e) => e.stopPropagation());
-      if (isEditing) {
-        noteInput.addEventListener("input", (e) => {
-          if (onNoteChange) {
-            onNoteChange(ticket.id, e.target.value);
-          }
-        });
-      }
+      // Note: The note value is saved when the user clicks Save, not on input
+      // This ensures note changes are discarded if the user cancels editing
       
       noteSection.append(noteLabel, noteInput);
       body.append(noteSection);
