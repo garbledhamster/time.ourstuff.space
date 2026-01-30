@@ -134,7 +134,9 @@ const elements = {
   settingsOverlay: $("settingsOverlay"),
   settingsDrawer: $("settingsDrawer"),
   settingsThemeSelect: $("settingsThemeSelect"),
-  settingsThemeCustomFields: $("settingsThemeCustomFields")
+  settingsThemeCustomFields: $("settingsThemeCustomFields"),
+  settingsDefaultBlockTime: $("settingsDefaultBlockTime"),
+  settingsZendeskUrl: $("settingsZendeskUrl")
 };
 
 let calendar = null;
@@ -235,6 +237,9 @@ function getThemeSettings(settings = {}) {
   return {
     ...resolved,
     zendeskUrl: resolved.zendeskUrl || "https://zendesk.com/agent/tickets/",
+    defaultBlockTimeMinutes: typeof resolved.defaultBlockTimeMinutes === "number" && resolved.defaultBlockTimeMinutes > 0
+      ? resolved.defaultBlockTimeMinutes
+      : 30,
     theme: {
       presetId: presetId || DEFAULT_THEME_ID,
       customColors
@@ -658,8 +663,9 @@ function addLogForTicket(ticketId, range) {
   const ticket = state.tickets.find((item) => item.id === ticketId);
   if (!ticket) return;
 
+  const defaultDuration = state.settings.defaultBlockTimeMinutes || 30;
   const start = range?.start ? new Date(range.start) : snapToMinutes(new Date(), 15);
-  const end = range?.end ? new Date(range.end) : addMinutes(start, 30);
+  const end = range?.end ? new Date(range.end) : addMinutes(start, defaultDuration);
   const now = new Date().toISOString();
 
   const record = normalizeEventRecord({
@@ -923,10 +929,20 @@ function wireDrawer() {
 }
 
 function wireSettingsDrawer() {
+  const syncSettingsInputs = () => {
+    if (elements.settingsDefaultBlockTime) {
+      elements.settingsDefaultBlockTime.value = state.settings.defaultBlockTimeMinutes || 30;
+    }
+    if (elements.settingsZendeskUrl) {
+      elements.settingsZendeskUrl.value = state.settings.zendeskUrl || "https://zendesk.com/agent/tickets/";
+    }
+  };
+
   const open = () => {
     elements.settingsDrawer.classList.add("open");
     elements.settingsOverlay.classList.add("open");
     document.body.classList.add("settings-open");
+    syncSettingsInputs();
   };
   const close = () => {
     elements.settingsDrawer.classList.remove("open");
@@ -939,6 +955,24 @@ function wireSettingsDrawer() {
   // Add tooltip to settings button
   addTooltip(elements.openSettingsBtn, "Settings");
   elements.settingsOverlay.addEventListener("click", close);
+
+  // Add event listeners for settings inputs
+  if (elements.settingsDefaultBlockTime) {
+    elements.settingsDefaultBlockTime.addEventListener("change", (event) => {
+      const value = parseInt(event.target.value, 10);
+      if (!isNaN(value) && value > 0) {
+        state.settings.defaultBlockTimeMinutes = value;
+        persistThemeSettings();
+      }
+    });
+  }
+
+  if (elements.settingsZendeskUrl) {
+    elements.settingsZendeskUrl.addEventListener("change", (event) => {
+      state.settings.zendeskUrl = event.target.value.trim() || "https://zendesk.com/agent/tickets/";
+      persistThemeSettings();
+    });
+  }
 }
 
 function wireInputs() {
@@ -1118,6 +1152,7 @@ async function init() {
     onSelectRange: handleCalendarSelect,
     onEventPreview: handleEventPreview,
     onEventOpen: openEventEditor,
+    defaultBlockTimeMinutes: state.settings.defaultBlockTimeMinutes,
     onEventDrop: (event) => {
       if (!event.end) {
         event.setEnd(addMinutes(event.start, 30));
@@ -1168,6 +1203,17 @@ async function init() {
       }
 
       upsertEventFromCalendar(event);
+    },
+    onTicketDrop: (info) => {
+      // Handle external ticket drop
+      const ticketId = info.draggedEl?.dataset?.ticketId;
+      if (ticketId) {
+        const defaultDuration = state.settings.defaultBlockTimeMinutes || 30;
+        addLogForTicket(ticketId, {
+          start: info.date,
+          end: addMinutes(info.date, defaultDuration)
+        });
+      }
     }
   });
 
@@ -1182,6 +1228,29 @@ async function init() {
     }
   });
   entryPopup = createEntryPopup();
+
+  // Set up external dragging for tickets
+  const ticketListEl = document.getElementById("ticketList");
+  if (ticketListEl && typeof FullCalendar.Draggable !== "undefined") {
+    new FullCalendar.Draggable(ticketListEl, {
+      itemSelector: ".ticketItem",
+      eventData: function(eventEl) {
+        const ticketId = eventEl.dataset.ticketId;
+        const ticket = state.tickets.find(t => t.id === ticketId);
+        if (ticket) {
+          return {
+            title: ticket.title || ticket.key,
+            duration: { minutes: state.settings.defaultBlockTimeMinutes || 30 },
+            extendedProps: {
+              ticketId: ticket.id,
+              ticketKey: ticket.key
+            }
+          };
+        }
+        return null;
+      }
+    });
+  }
 
   wireNavigation();
   wireDrawer();
