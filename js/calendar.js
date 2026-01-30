@@ -48,6 +48,8 @@ export function createCalendar({ events, onSelectRange, onEventOpen, onEventPrev
     droppable: true,
     headerToolbar: false,
     height: "100%",
+    slotEventOverlap: false, // Force events to be side-by-side, not overlapping
+    eventOrder: '-duration,title', // Bigger timeblocks on the left (descending duration)
     eventClick(info) {
       // Get click position
       const clickX = info.jsEvent.clientX;

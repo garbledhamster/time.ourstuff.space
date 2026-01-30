@@ -1220,7 +1220,8 @@ async function init() {
         if (ticket) {
           return {
             title: ticket.title || ticket.key,
-            duration: { minutes: state.settings.defaultBlockTimeMinutes || 30 },
+            // Don't provide duration - we'll handle event creation manually in onTicketDrop
+            // to avoid duplicate events being created
             extendedProps: {
               ticketId: ticket.id,
               ticketKey: ticket.key
