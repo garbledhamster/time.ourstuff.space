@@ -721,6 +721,7 @@ body.settings-open{
 .fc .fc-event{
   border-radius: 10px !important;
   border-width: 1px !important;
+  position: relative;
 }
 .fc .fc-event-title{ font-weight: 900; }
 .fc .fc-event-time{ font-weight: 800; opacity:.9; }
@@ -729,6 +730,51 @@ body.settings-open{
   opacity: 0.6 !important;
   border-style: dashed !important;
   border-width: 2px !important;
+}
+
+/* Selected event highlight */
+.fc .fc-event-selected,
+.fc .fc-event:focus {
+  outline: none !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--primary-color) 40%, transparent) !important;
+  border-color: var(--primary-color) !important;
+  border-width: 2px !important;
+  z-index: 10 !important;
+}
+
+/* Resize handles - visible circles on top and bottom of event */
+.fc .fc-event .custom-resize-handle {
+  position: absolute;
+  width: 12px;
+  height: 12px;
+  background: var(--primary-color);
+  border: 2px solid rgba(255, 255, 255, 0.95);
+  border-radius: 50%;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  opacity: 0.85;
+  transition: opacity 0.2s ease, transform 0.2s ease;
+  pointer-events: none; /* Decorative only, FullCalendar handles resize */
+}
+
+.fc .fc-event .custom-resize-handle-top {
+  top: -6px;
+}
+
+.fc .fc-event .custom-resize-handle-bottom {
+  bottom: -6px;
+}
+
+.fc .fc-event:hover .custom-resize-handle,
+.fc .fc-event-selected .custom-resize-handle {
+  opacity: 1;
+  transform: translateX(-50%) scale(1.1);
+}
+
+/* Hide resize handles on very small events */
+.fc .fc-timegrid-event-short .custom-resize-handle {
+  display: none;
 }
 
 /* FullCalendar list view day headers */
