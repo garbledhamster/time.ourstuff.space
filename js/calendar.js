@@ -97,6 +97,18 @@ export function createCalendar({ events, tickets = [], onSelectRange, onEventOpe
       }
     },
     eventDidMount(info) {
+      const { top: topHandle, bottom: bottomHandle } = createResizeHandles();
+      const startResizer = info.el.querySelector('.fc-event-resizer-start');
+      const endResizer = info.el.querySelector('.fc-event-resizer-end');
+
+      if (startResizer && !startResizer.querySelector('.custom-resize-handle')) {
+        startResizer.appendChild(topHandle);
+      }
+
+      if (endResizer && !endResizer.querySelector('.custom-resize-handle')) {
+        endResizer.appendChild(bottomHandle);
+      }
+
       info.el.addEventListener("dblclick", () => {
         if (onEventOpen) {
           onEventOpen(info.event);
