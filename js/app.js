@@ -105,10 +105,15 @@ const state = {
 };
 
 const elements = {
-  ticketKeyInput: $("ticketKeyInput"),
-  ticketTitleInput: $("ticketTitleInput"),
-  ticketClientInput: $("ticketClientInput"),
-  addTicketBtn: $("addTicketBtn"),
+  // Add ticket drawer
+  addTicketNavBtn: $("addTicketNavBtn"),
+  addTicketDrawer: $("addTicketDrawer"),
+  addTicketKeyInput: $("addTicketKeyInput"),
+  addTicketTitleInput: $("addTicketTitleInput"),
+  addTicketClientInput: $("addTicketClientInput"),
+  addTicketSaveBtn: $("addTicketSaveBtn"),
+  addTicketCancelBtn: $("addTicketCancelBtn"),
+  // Ticket panel elements
   ticketList: $("ticketList"),
   ticketsCount: $("ticketsCount"),
   ticketSearchInput: $("ticketSearchInput"),
@@ -514,11 +519,12 @@ function updateTicketList() {
     statusFilters: state.statusFilters,
     clientFilter: state.clientFilter,
     activeTicketId: state.activeTicketId,
+    editingTicketId: state.editingTicketId,
     collapsedTickets: state.collapsedTickets,
     zendeskUrl: state.settings.zendeskUrl,
     onSelect: (id) => {
       // Cancel editing mode if we're selecting a different ticket
-      if (state.editingTicketId) {
+      if (state.editingTicketId && state.editingTicketId !== id) {
         cancelEdit();
       }
       state.activeTicketId = id;
@@ -527,14 +533,9 @@ function updateTicketList() {
     },
     onAddLog: (id) => addLogForTicket(id),
     onEdit: (id) => editTicket(id),
+    onSaveEdit: (id, data) => saveEditedTicketInPlace(id, data),
+    onCancelEdit: () => cancelEdit(),
     onDelete: (id) => deleteTicket(id),
-    onNoteChange: (id, note) => {
-      const ticket = state.tickets.find((t) => t.id === id);
-      if (ticket) {
-        ticket.note = note;
-        syncStorage();
-      }
-    },
     onEntryTimeClick: (event, ticket, clickX, clickY) => {
       handleEntryTimeClick(event, ticket, clickX, clickY);
     }
@@ -542,15 +543,10 @@ function updateTicketList() {
 }
 
 function addTicket() {
-  // If we're in editing mode, save the edited ticket instead
-  if (state.editingTicketId) {
-    saveEditedTicket();
-    return;
-  }
-
-  const key = extractTicketKey(elements.ticketKeyInput.value);
-  const title = elements.ticketTitleInput.value.trim();
-  const client = elements.ticketClientInput.value.trim();
+  // Use the new drawer inputs
+  const key = extractTicketKey(elements.addTicketKeyInput?.value || "");
+  const title = (elements.addTicketTitleInput?.value || "").trim();
+  const client = (elements.addTicketClientInput?.value || "").trim();
   if (!key && !title) return;
 
   const ticket = {
@@ -563,12 +559,37 @@ function addTicket() {
   };
 
   state.tickets = [ticket, ...state.tickets];
-  elements.ticketKeyInput.value = "";
-  elements.ticketTitleInput.value = "";
-  elements.ticketClientInput.value = "";
+  
+  // Close the drawer (which also clears inputs)
+  closeAddTicketDrawer();
+  
   state.activeTicketId = ticket.id;
   syncStorage();
   updateTicketList();
+}
+
+function openAddTicketDrawer() {
+  // Cancel any ticket editing to avoid having two edit interfaces open
+  if (state.editingTicketId) {
+    cancelEdit();
+  }
+  
+  if (elements.addTicketDrawer) {
+    elements.addTicketDrawer.classList.add("open");
+    if (elements.addTicketKeyInput) {
+      elements.addTicketKeyInput.focus();
+    }
+  }
+}
+
+function closeAddTicketDrawer() {
+  if (elements.addTicketDrawer) {
+    elements.addTicketDrawer.classList.remove("open");
+    // Clear the inputs
+    if (elements.addTicketKeyInput) elements.addTicketKeyInput.value = "";
+    if (elements.addTicketTitleInput) elements.addTicketTitleInput.value = "";
+    if (elements.addTicketClientInput) elements.addTicketClientInput.value = "";
+  }
 }
 
 function normalizeHeader(value) {
@@ -691,40 +712,25 @@ function editTicket(ticketId) {
   const ticket = state.tickets.find((item) => item.id === ticketId);
   if (!ticket) return;
 
-  // Populate the form fields with the current ticket values
-  elements.ticketKeyInput.value = ticket.key || "";
-  elements.ticketTitleInput.value = ticket.title || "";
-  elements.ticketClientInput.value = ticket.client || "";
-
-  // Change the add button to a save button
-  const addBtn = elements.addTicketBtn;
-  const originalText = addBtn.innerHTML;
-  addBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"/></svg> Save changes';
-  addBtn.classList.add('editing');
-
-  // Store the ticket being edited
+  // Set the editing state - the ticket will render in edit mode
   state.editingTicketId = ticketId;
-
-  // Focus on the key input
-  elements.ticketKeyInput.focus();
-  elements.ticketKeyInput.select();
-
-  // Scroll to top of tickets panel to show the form
-  elements.ticketsPanel.scrollTop = 0;
+  state.activeTicketId = ticketId;
+  state.collapsedTickets.delete(ticketId);
+  
+  updateTicketList();
 }
 
-function saveEditedTicket() {
-  if (!state.editingTicketId) return;
-
-  const ticket = state.tickets.find((item) => item.id === state.editingTicketId);
+function saveEditedTicketInPlace(ticketId, data) {
+  const ticket = state.tickets.find((item) => item.id === ticketId);
   if (!ticket) {
     cancelEdit();
     return;
   }
 
-  const key = extractTicketKey(elements.ticketKeyInput.value);
-  const title = elements.ticketTitleInput.value.trim();
-  const client = elements.ticketClientInput.value.trim();
+  const key = extractTicketKey(data.key || "");
+  const title = (data.title || "").trim();
+  const client = (data.client || "").trim();
+  const note = data.note !== undefined ? data.note : ticket.note;
 
   if (!key && !title) {
     cancelEdit();
@@ -735,6 +741,7 @@ function saveEditedTicket() {
   ticket.key = key;
   ticket.title = title;
   ticket.client = client;
+  ticket.note = note;
 
   // Update all events associated with this ticket
   for (const record of state.events) {
@@ -748,24 +755,21 @@ function saveEditedTicket() {
     }
   }
 
-  cancelEdit();
+  state.editingTicketId = null;
   syncStorage();
   updateTicketList();
 }
 
+function saveEditedTicket() {
+  // Legacy function - no longer used but kept for compatibility
+  if (!state.editingTicketId) return;
+  cancelEdit();
+}
+
 function cancelEdit() {
-  // Clear the form
-  elements.ticketKeyInput.value = "";
-  elements.ticketTitleInput.value = "";
-  elements.ticketClientInput.value = "";
-
-  // Restore the add button
-  const addBtn = elements.addTicketBtn;
-  addBtn.innerHTML = '<svg class="btn-icon" viewBox="0 0 24 24"><path d="M5 12h14"/><path d="M12 5v14"/></svg> Add ticket';
-  addBtn.classList.remove('editing');
-
-  // Clear the editing state
+  // Clear the editing state and re-render
   state.editingTicketId = null;
+  updateTicketList();
 }
 
 function deleteTicket(ticketId) {
@@ -976,19 +980,35 @@ function wireSettingsDrawer() {
 }
 
 function wireInputs() {
-  elements.addTicketBtn.addEventListener("click", addTicket);
-  elements.ticketKeyInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") addTicket();
-    if (event.key === "Escape" && state.editingTicketId) cancelEdit();
-  });
-  elements.ticketTitleInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") addTicket();
-    if (event.key === "Escape" && state.editingTicketId) cancelEdit();
-  });
-  elements.ticketClientInput.addEventListener("keydown", (event) => {
-    if (event.key === "Enter") addTicket();
-    if (event.key === "Escape" && state.editingTicketId) cancelEdit();
-  });
+  // Wire up the new add ticket drawer
+  if (elements.addTicketNavBtn) {
+    elements.addTicketNavBtn.addEventListener("click", openAddTicketDrawer);
+    addTooltip(elements.addTicketNavBtn, "Add new ticket");
+  }
+  if (elements.addTicketSaveBtn) {
+    elements.addTicketSaveBtn.addEventListener("click", addTicket);
+  }
+  if (elements.addTicketCancelBtn) {
+    elements.addTicketCancelBtn.addEventListener("click", closeAddTicketDrawer);
+  }
+  if (elements.addTicketKeyInput) {
+    elements.addTicketKeyInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addTicket();
+      if (event.key === "Escape") closeAddTicketDrawer();
+    });
+  }
+  if (elements.addTicketTitleInput) {
+    elements.addTicketTitleInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addTicket();
+      if (event.key === "Escape") closeAddTicketDrawer();
+    });
+  }
+  if (elements.addTicketClientInput) {
+    elements.addTicketClientInput.addEventListener("keydown", (event) => {
+      if (event.key === "Enter") addTicket();
+      if (event.key === "Escape") closeAddTicketDrawer();
+    });
+  }
 
   elements.ticketSearchInput.addEventListener(
     "input",
