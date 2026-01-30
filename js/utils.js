@@ -68,7 +68,28 @@ export function hashHue(str) {
   return h % 360;
 }
 
-export function eventColors(seed) {
+export function eventColors(seed, customColor = null) {
+  // If a custom color is provided, use it
+  if (customColor) {
+    // Ensure the color is in hex format, otherwise use it as-is and let CSS handle it
+    const isHexColor = /^#[0-9A-Fa-f]{6}$/.test(customColor);
+    if (isHexColor) {
+      return {
+        backgroundColor: `${customColor}33`, // Add transparency (20%)
+        borderColor: `${customColor}8C`, // Add transparency (55%)
+        textColor: `rgba(255,255,255,.95)`
+      };
+    } else {
+      // For non-hex colors, use rgba or fallback
+      return {
+        backgroundColor: `color-mix(in srgb, ${customColor} 20%, transparent)`,
+        borderColor: `color-mix(in srgb, ${customColor} 55%, transparent)`,
+        textColor: `rgba(255,255,255,.95)`
+      };
+    }
+  }
+  
+  // Otherwise, use the hash-based color
   const hue = hashHue(seed);
   return {
     backgroundColor: `hsla(${hue}, 80%, 55%, 0.20)`,

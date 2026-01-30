@@ -16,7 +16,7 @@ function createResizeHandles() {
   return { top: topHandle, bottom: bottomHandle };
 }
 
-export function toCalendarEvent(record) {
+export function toCalendarEvent(record, ticketColor = null) {
   const colorSeed = record.ticketKey || record.ticketId || record.id;
   return {
     id: record.id,
@@ -28,11 +28,11 @@ export function toCalendarEvent(record) {
       ticketKey: record.ticketKey,
       notes: record.notes || ""
     },
-    ...eventColors(colorSeed)
+    ...eventColors(colorSeed, ticketColor)
   };
 }
 
-export function createCalendar({ events, onSelectRange, onEventOpen, onEventPreview, onEventDrop, onEventResize, onTicketDrop, defaultBlockTimeMinutes }) {
+export function createCalendar({ events, tickets = [], onSelectRange, onEventOpen, onEventPreview, onEventDrop, onEventResize, onTicketDrop, defaultBlockTimeMinutes }) {
   const calendarEl = document.getElementById("calendar");
   if (!calendarEl) {
     throw new Error("Calendar element not found");
@@ -110,7 +110,18 @@ export function createCalendar({ events, onSelectRange, onEventOpen, onEventPrev
     }
   });
 
-  const normalizedEvents = events.map((record) => toCalendarEvent(record));
+  // Create a map of ticketId to ticket color for quick lookup
+  const ticketColorMap = new Map();
+  tickets.forEach(ticket => {
+    if (ticket.id && ticket.color) {
+      ticketColorMap.set(ticket.id, ticket.color);
+    }
+  });
+
+  const normalizedEvents = events.map((record) => {
+    const ticketColor = record.ticketId ? ticketColorMap.get(record.ticketId) : null;
+    return toCalendarEvent(record, ticketColor);
+  });
   calendar.addEventSource(normalizedEvents);
   calendar.render();
 
