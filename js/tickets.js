@@ -285,20 +285,16 @@ export function renderTickets({
         for (const event of ticketEvents) {
           const entry = document.createElement("div");
           entry.className = "entryItem";
-
+          
           const start = new Date(event.start);
           const end = new Date(event.end);
-
+          
           // Validate dates
           if (isNaN(start.getTime()) || isNaN(end.getTime())) {
             continue; // Skip invalid entries
           }
-
+          
           const duration = Math.max(0, Math.round((end.getTime() - start.getTime()) / 60000));
-
-          // Scale the entry height based on duration (0.8px per minute, min 40px)
-          const minHeight = Math.max(40, duration * 0.8);
-          entry.style.minHeight = `${minHeight}px`;
           
           const entryTime = document.createElement("button");
           entryTime.className = "entryTime";
