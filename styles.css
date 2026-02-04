@@ -879,6 +879,25 @@ body.settings-open{
 }
 
 /* Resize handles - visible circles on top and bottom of event */
+.fc .fc-event .fc-event-resizer {
+  width: 12px !important;
+  height: 12px !important;
+  left: 50% !important;
+  transform: translateX(-50%) !important;
+  background: transparent !important;
+  border: none !important;
+  opacity: 1 !important;
+  cursor: ns-resize !important;
+}
+
+.fc .fc-event .fc-event-resizer-start {
+  top: -6px !important;
+}
+
+.fc .fc-event .fc-event-resizer-end {
+  bottom: -6px !important;
+}
+
 .fc .fc-event .custom-resize-handle {
   position: absolute;
   width: 12px;
@@ -895,11 +914,11 @@ body.settings-open{
 }
 
 .fc .fc-event .custom-resize-handle-top {
-  top: -6px;
+  top: 0;
 }
 
 .fc .fc-event .custom-resize-handle-bottom {
-  bottom: -6px;
+  bottom: 0;
 }
 
 .fc .fc-event:hover .custom-resize-handle,
@@ -911,6 +930,10 @@ body.settings-open{
 /* Hide resize handles on very small events */
 .fc .fc-timegrid-event-short .custom-resize-handle {
   display: none;
+}
+
+.fc .fc-timegrid-event-short .fc-event-resizer {
+  display: none !important;
 }
 
 /* FullCalendar list view day headers */
